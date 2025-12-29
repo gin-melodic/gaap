@@ -1,0 +1,44 @@
+name: GAAP API CI
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+    paths:
+      - 'gaap-api/**'
+      - '.github/workflows/ci-gaap-api.yml'
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+    paths:
+      - 'gaap-api/**'
+      - '.github/workflows/ci-gaap-api.yml'
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gaap-api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: gaap-api/go.sum
+
+      - name: Download dependencies
+        working-directory: gaap-api
+        run: go mod download
+
+      - name: Verify Build
+        working-directory: gaap-api
+        run: go build -v ./...
+
+      - name: Run Tests
+        working-directory: gaap-api
+        run: go test -v ./...

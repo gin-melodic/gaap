@@ -1,0 +1,173 @@
+services:
+  # ==================== Caddy Reverse Proxy ====================
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: gaap-caddy-dev
+    restart: unless-stopped
+    ports:
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+      - "2019:2019"  # Caddy Admin API
+    volumes:
+      # Caddy configuration
+      - ./config/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      
+      # Persistent data (certificates, etc.)
+      - ./volumes/caddy/data:/data
+      - ./volumes/caddy/config:/config
+      
+      # User uploads (if serving static files)
+      - ./volumes/uploads:/var/www/uploads
+    environment:
+      - DEV_DOMAIN=${DEV_DOMAIN:-gaap.local}
+    depends_on:
+      - gaap-api
+      - gaap-web
+    networks:
+      - gaap-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:2019/config/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      
+  # ==================== Backend: GoFrame API ====================
+  gaap-api:
+    build:
+      context: ./gaap-api
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: gaap-api-dev
+    restart: unless-stopped
+    expose:
+      - "8000"  # Only expose to internal network
+    ports:
+      - "${DELVE_PORT:-40000}:40000"  # Delve debugger
+    volumes:
+      - ./gaap-api:/app
+      - go-mod-cache:/go/pkg/mod
+    environment:
+      - GF_ENV=${GF_ENV}
+      - GF_DEBUG=${GF_DEBUG}
+      - GF_LOG_LEVEL=${GF_LOG_LEVEL}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_INTERNAL_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_INTERNAL_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_INTERNAL_PORT}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENABLE_DELVE=${ENABLE_DELVE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - gaap-network
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+
+  # ==================== Frontend: Next.js Web ====================
+  gaap-web:
+    build:
+      context: ./gaap-web
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: gaap-web-dev
+    restart: unless-stopped
+    expose:
+      - "3000"  # Only expose to internal network
+    volumes:
+      - ./gaap-web:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      # Allow Next.js to accept requests from Caddy
+      - HOSTNAME=0.0.0.0
+    depends_on:
+      - gaap-api
+    networks:
+      - gaap-network
+
+  # ==================== PostgreSQL Database ====================
+  postgres:
+    image: postgres:18
+    container_name: gaap-postgres-dev
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data
+      - ./gaap-api/manifest/sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gaap-network
+
+  # ==================== Redis Cache ====================
+  redis:
+    image: redis:7-alpine
+    container_name: gaap-redis-dev
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
+    volumes:
+      - ./volumes/redis:/data
+    networks:
+      - gaap-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ==================== RabbitMQ Message Queue ====================
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: gaap-rabbitmq-dev
+    restart: unless-stopped
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    volumes:
+      - ./volumes/rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gaap-network
+
+volumes:
+  go-mod-cache:
+
+networks:
+  gaap-network:
+    driver: bridge

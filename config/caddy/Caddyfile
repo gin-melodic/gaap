@@ -1,0 +1,118 @@
+# ==============================================================================
+# GAAP Development Environment - Caddy Configuration
+# Unified domain for frontend and backend to avoid CORS issues
+# ==============================================================================
+
+{
+    # Global options
+    admin 0.0.0.0:2019
+    
+    # Auto HTTPS for local development
+    # Caddy will generate self-signed certificates for .local domains
+    auto_https disable_redirects
+    
+    # Enable debug mode in development
+    debug
+    
+    # Local CA for self-signed certificates
+    local_certs
+}
+
+# Main development domain
+{$DEV_DOMAIN:gaap.local} {
+    # Enable detailed logging
+    log {
+        output stdout
+        format console
+        level DEBUG
+    }
+
+    # Static asset caching
+    # @static {
+    #     path *.css *.js *.jpg *.png *.svg *.woff2
+    # }
+    # header @static Cache-Control "public, max-age=3600"
+    
+    # Enable compression
+    encode gzip zstd
+
+    # ==============================================================================
+    # Backend API Routes (GoFrame)
+    # All /api/* requests go to gaap-api:8000
+    # ==============================================================================
+    handle_path /api/* {
+        reverse_proxy gaap-api:8000 {
+            # Health check
+            health_uri /health
+            health_interval 10s
+            health_timeout 5s
+            
+            # Headers for WebSocket support (if needed)
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
+    # ==============================================================================
+    # Static Assets & Uploads
+    # Serve user uploads directly (if not using object storage)
+    # ==============================================================================
+    handle /uploads/* {
+        root * /var/www
+        file_server browse
+    }
+
+    # ==============================================================================
+    # Frontend (Next.js)
+    # All other requests go to gaap-web:3000
+    # ==============================================================================
+    handle {
+        reverse_proxy gaap-web:3000 {
+            # Next.js hot-reload support
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            
+            # WebSocket support for Next.js Fast Refresh
+            @websockets {
+                header Connection *Upgrade*
+                header Upgrade websocket
+            }
+            
+            # Increase timeout for development
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 30s
+            }
+        }
+    }
+
+    # Security headers (can be disabled in dev if causing issues)
+    header {
+        # Enable CORS for development
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization"
+        
+        # Remove server information
+        -Server
+        
+        # Basic security headers
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # Handle OPTIONS requests for CORS preflight
+    @options {
+        method OPTIONS
+    }
+    respond @options 204
+}
+
+# ==============================================================================
+# Admin API (optional, for Caddy management)
+# Access at https://gaap.local:2019
+# ==============================================================================

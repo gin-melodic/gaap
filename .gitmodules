@@ -1,0 +1,8 @@
+[submodule "gaap-api"]
+	path = gaap-api
+	url = https://github.com/gin-melodic/gaap-api.git
+	branch = main
+[submodule "gaap-web"]
+	path = gaap-web
+	url = https://github.com/gin-melodic/gaap-web.git
+	branch = main
