@@ -46,6 +46,8 @@ services:
     volumes:
       - ./gaap-api:/app
       - go-mod-cache:/go/pkg/mod
+      - ./volumes/exports:/app/exports
+      - ./volumes/imports:/app/imports
     environment:
       - GF_ENV=${GF_ENV}
       - GF_DEBUG=${GF_DEBUG}
