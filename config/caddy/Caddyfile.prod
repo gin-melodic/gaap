@@ -16,9 +16,9 @@ gaap.cc, www.gaap.cc {
     redir @www https://gaap.cc{uri} permanent
 
     # API routes
-    handle /api/* {
+    handle_path /api/* {
         reverse_proxy gaap-api:8000 {
-            health_uri /api/health
+            health_uri /v1/health
             health_interval 30s
             health_timeout 10s
             

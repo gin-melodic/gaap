@@ -65,6 +65,9 @@ services:
       - RABBITMQ_USER=${RABBITMQ_USER}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
+      - JWT_ACCESS_TOKEN_EXPIRY=${JWT_ACCESS_TOKEN_EXPIRY}
+      - JWT_REFRESH_TOKEN_EXPIRY=${JWT_REFRESH_TOKEN_EXPIRY}
+      - ALE_BOOTSTRAP_KEY=${ALE_BOOTSTRAP_KEY}
       - ENABLE_DELVE=${ENABLE_DELVE}
     depends_on:
       postgres:
@@ -98,6 +101,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_ALE_BOOTSTRAP_KEY=${ALE_BOOTSTRAP_KEY}
       # Allow Next.js to accept requests from Caddy
       - HOSTNAME=0.0.0.0
     depends_on:
