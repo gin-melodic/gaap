@@ -102,6 +102,7 @@ services:
       - NODE_ENV=${NODE_ENV}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_ALE_BOOTSTRAP_KEY=${ALE_BOOTSTRAP_KEY}
+      - USE_NODEMON=${USE_NODEMON:-false}
       # Allow Next.js to accept requests from Caddy
       - HOSTNAME=0.0.0.0
     depends_on:

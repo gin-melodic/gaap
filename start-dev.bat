@@ -127,7 +127,10 @@ call :get_services %TARGET%
 if errorlevel 1 exit /b 1
 
 call :print_info "Services: %SERVICES%"
-%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES%
+:: Enable polling-based file watch for Windows Docker (nodemon)
+if /i "%TARGET%"=="web" set "USE_NODEMON=true"
+if /i "%TARGET%"=="all" set "USE_NODEMON=true"
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES% 
 
 call :print_success "%TARGET% services started successfully!"
 echo.
@@ -151,7 +154,10 @@ call :get_services %TARGET%
 if errorlevel 1 exit /b 1
 
 %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" stop %SERVICES%
-%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES%
+:: Enable polling-based file watch for Windows Docker (nodemon)
+if /i "%TARGET%"=="web" set "USE_NODEMON=true"
+if /i "%TARGET%"=="all" set "USE_NODEMON=true"
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES% 
 
 call :print_success "%TARGET% services restarted successfully!"
 goto :eof
@@ -244,6 +250,8 @@ if "%TARGET%"=="web" (
     %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" stop gaap-web 2>nul
     %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" rm -f gaap-web 2>nul
     %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" build --no-cache gaap-web
+    :: Enable polling-based file watch for Windows Docker (nodemon)
+    set "USE_NODEMON=true"
     %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d gaap-web
     call :print_success "Node.js dependencies installed!"
     goto :install_deps_done
@@ -262,6 +270,8 @@ if "%TARGET%"=="all" (
     %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" stop gaap-web 2>nul
     %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" rm -f gaap-web 2>nul
     %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" build --no-cache gaap-web
+    :: Enable polling-based file watch for Windows Docker (nodemon)
+    set "USE_NODEMON=true"
     %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d gaap-web
     call :print_success "Node.js dependencies installed!"
 )
@@ -285,7 +295,10 @@ call :print_info "Services: %SERVICES%"
 %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" build %SERVICES%
 
 :: Start services
-%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES%
+:: Enable polling-based file watch for Windows Docker (nodemon)
+if /i "%TARGET%"=="web" set "USE_NODEMON=true"
+if /i "%TARGET%"=="all" set "USE_NODEMON=true"
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES% 
 
 call :print_success "%TARGET% services rebuilt and started!"
 call :print_info "Hot-reload is active. Changes to source files will be reflected automatically."
