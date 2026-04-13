@@ -86,8 +86,11 @@ We use a modern, "boring" stack that just works:
 Get your instance running in less than 2 minutes.
 
 ### Prerequisites
-- Docker & Docker Compose
-- Git
+
+- **Go 1.24+**: [Download](https://go.dev/dl/)
+- **Node.js 22+**: [Download](https://nodejs.org/)
+- **Docker Desktop**: [Download](https://www.docker.com/products/docker-desktop/)
+- **Git**: [Download](https://git-scm.com/)
 
 ### Installation
 
@@ -100,17 +103,27 @@ cd gaap
 cp .env.example .env
 # (Optional) Edit .env if you need to change ports
 
-# 3. Start the engine
-docker-compose -f docker-compose.dev.yml up -d
+# 3. Install development tools
+go install github.com/air-verse/air@v1.61.7
 
+# 4. Start the engine
+# Windows
+start-dev.bat start
+
+# macOS/Linux
+./start-dev.sh start
 ```
 
 ### Access
 
-* **Web Interface**: http://localhost:3000 (Default)
-* **API Docs**: http://localhost:8080/swagger
+* **Web Interface (HTTP)**: http://localhost:3000
+* **Web Interface (HTTPS)**: https://gaap.local
+* **Backend API**: http://localhost:8000
+* **API Health**: http://localhost:8000/api/health
 
-> **Tip**: For deployment with HTTPS, please refer to our [Deployment Guide](deployment.md).
+> **Note**: API and Web run locally for optimal HMR performance. Middleware (Postgres, Redis, RabbitMQ, Caddy) run in Docker containers. Caddy provides HTTPS automatically at https://gaap.local.
+> 
+> For deployment with HTTPS, please refer to our [Deployment Guide](deployment.md).
 
 ---
 

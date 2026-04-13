@@ -7,15 +7,15 @@ setlocal enabledelayedexpansion
 :: =============================================================================
 
 :: Configuration
-set "COMPOSE_FILE=docker-compose.dev.yml"
+set "COMPOSE_FILE=docker-middleware-compose.yml"
 set "SCRIPT_DIR=%~dp0"
 cd /d "%SCRIPT_DIR%"
 
-:: Service groups
+:: Service groups (middleware only - API and Web run locally)
 set "MIDDLEWARE_SERVICES=postgres redis rabbitmq caddy"
 set "API_SERVICES=gaap-api"
 set "WEB_SERVICES=gaap-web"
-set "ALL_SERVICES=%MIDDLEWARE_SERVICES% %API_SERVICES% %WEB_SERVICES%"
+set "ALL_SERVICES=%MIDDLEWARE_SERVICES%"
 
 :: =============================================================================
 :: Main Entry Point
@@ -100,6 +100,88 @@ goto :eof
 echo [INFO] %~1
 goto :eof
 
+:: =============================================================================
+:: Local Development Functions (Native Windows)
+:: =============================================================================
+
+:start_middleware
+call :print_header "Starting middleware services"
+call :print_info "Services: %MIDDLEWARE_SERVICES%"
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %MIDDLEWARE_SERVICES%
+call :print_success "Middleware services started successfully!"
+goto :eof
+
+:stop_middleware
+call :print_header "Stopping middleware services"
+call :print_info "Services: %MIDDLEWARE_SERVICES%"
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" stop %MIDDLEWARE_SERVICES%
+call :print_success "Middleware services stopped successfully!"
+goto :eof
+
+:start_local_api
+call :print_header "Starting GAAP API (Local)"
+cd /d "%SCRIPT_DIR%\gaap-api"
+if not exist "go.mod" (
+    call :print_error "go.mod not found. Please ensure you're in the correct directory."
+    cd /d "%SCRIPT_DIR%"
+    exit /b 1
+)
+
+:: Sync and prepare .env file
+call :print_info "Syncing .env file to API directory..."
+copy /Y "%SCRIPT_DIR%.env" ".env" >nul
+powershell -Command "(Get-Content .env) -replace 'POSTGRES_HOST=postgres', 'POSTGRES_HOST=127.0.0.1' -replace 'REDIS_HOST=redis', 'REDIS_HOST=127.0.0.1' -replace 'RABBITMQ_HOST=rabbitmq', 'RABBITMQ_HOST=127.0.0.1' | Set-Content .env -Encoding UTF8"
+
+call :print_info "Installing Go dependencies..."
+go mod download
+call :print_info "Starting API server with hot-reload..."
+start "GAAP API" pwsh -NoExit -Command "cd '%SCRIPT_DIR%\gaap-api'; air" 2>nul || start "GAAP API" powershell -NoExit -Command "cd '%SCRIPT_DIR%\gaap-api'; air"
+cd /d "%SCRIPT_DIR%"
+call :print_success "GAAP API started on http://localhost:8000"
+call :print_info "Press Ctrl+C in the API window to stop"
+goto :eof
+
+:stop_local_api
+call :print_header "Stopping GAAP API (Local)"
+taskkill /FI "WINDOWTITLE eq GAAP API*" /IM pwsh.exe /T /F 2>nul || taskkill /FI "WINDOWTITLE eq GAAP API*" /IM powershell.exe /T /F 2>nul || (
+    call :print_info "API process not found or already stopped"
+)
+call :print_success "GAAP API stopped successfully!"
+goto :eof
+
+:start_local_web
+call :print_header "Starting GAAP Web (Local)"
+cd /d "%SCRIPT_DIR%\gaap-web"
+if not exist "package.json" (
+    call :print_error "package.json not found. Please ensure you're in the correct directory."
+    cd /d "%SCRIPT_DIR%"
+    exit /b 1
+)
+
+:: Sync and prepare .env.local file
+call :print_info "Syncing .env file to Web directory as .env.local..."
+copy /Y "%SCRIPT_DIR%.env" ".env.local" >nul
+powershell -Command "(Get-Content .env.local) -replace 'POSTGRES_HOST=postgres', 'POSTGRES_HOST=127.0.0.1' -replace 'REDIS_HOST=redis', 'REDIS_HOST=127.0.0.1' -replace 'RABBITMQ_HOST=rabbitmq', 'RABBITMQ_HOST=127.0.0.1' -replace '^ALE_BOOTSTRAP_KEY=', 'NEXT_PUBLIC_ALE_BOOTSTRAP_KEY=' -replace '^TURNSTILE_SITE_KEY=', 'NEXT_PUBLIC_TURNSTILE_SITE_KEY=' | Set-Content .env.local -Encoding UTF8"
+
+if not exist "node_modules" (
+    call :print_info "Installing Node.js dependencies..."
+    call npm install
+)
+call :print_info "Starting Next.js development server..."
+start "GAAP Web" pwsh -NoExit -Command "cd '%SCRIPT_DIR%\gaap-web'; npm run dev" 2>nul || start "GAAP Web" powershell -NoExit -Command "cd '%SCRIPT_DIR%\gaap-web'; npm run dev"
+cd /d "%SCRIPT_DIR%"
+call :print_success "GAAP Web started on http://localhost:3000"
+call :print_info "Press Ctrl+C in the Web window to stop"
+goto :eof
+
+:stop_local_web
+call :print_header "Stopping GAAP Web (Local)"
+taskkill /FI "WINDOWTITLE eq GAAP Web*" /IM pwsh.exe /T /F 2>nul || taskkill /FI "WINDOWTITLE eq GAAP Web*" /IM powershell.exe /T /F 2>nul || (
+    call :print_info "Web process not found or already stopped"
+)
+call :print_success "GAAP Web stopped successfully!"
+goto :eof
+
 :get_services
 set "GET_TARGET=%~1"
 if "%GET_TARGET%"=="middleware" (
@@ -123,15 +205,28 @@ goto :eof
 
 :start_services
 call :print_header "Starting %TARGET% services"
+
+:: Handle local services (api/web) differently from middleware
+if /i "%TARGET%"=="api" (
+    call :start_local_api
+    goto :eof
+)
+if /i "%TARGET%"=="web" (
+    call :start_local_web
+    goto :eof
+)
+if /i "%TARGET%"=="all" (
+    call :start_middleware
+    call :start_local_api
+    call :start_local_web
+    goto :eof
+)
+
+:: Start middleware only
 call :get_services %TARGET%
 if errorlevel 1 exit /b 1
-
 call :print_info "Services: %SERVICES%"
-:: Enable polling-based file watch for Windows Docker (nodemon)
-if /i "%TARGET%"=="web" set "USE_NODEMON=true"
-if /i "%TARGET%"=="all" set "USE_NODEMON=true"
-%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES% 
-
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES%
 call :print_success "%TARGET% services started successfully!"
 echo.
 call :print_info "To view logs, run: start-dev.bat logs %TARGET%"
@@ -139,26 +234,60 @@ goto :eof
 
 :stop_services
 call :print_header "Stopping %TARGET% services"
+
+:: Handle local services (api/web) differently from middleware
+if /i "%TARGET%"=="api" (
+    call :stop_local_api
+    goto :eof
+)
+if /i "%TARGET%"=="web" (
+    call :stop_local_web
+    goto :eof
+)
+if /i "%TARGET%"=="all" (
+    call :stop_local_api
+    call :stop_local_web
+    call :stop_middleware
+    goto :eof
+)
+
+:: Stop middleware only
 call :get_services %TARGET%
 if errorlevel 1 exit /b 1
-
 call :print_info "Services: %SERVICES%"
 %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" stop %SERVICES%
-
 call :print_success "%TARGET% services stopped successfully!"
 goto :eof
 
 :restart_services
 call :print_header "Restarting %TARGET% services"
+
+:: Handle local services (api/web) differently from middleware
+if /i "%TARGET%"=="api" (
+    call :stop_local_api
+    call :start_local_api
+    goto :eof
+)
+if /i "%TARGET%"=="web" (
+    call :stop_local_web
+    call :start_local_web
+    goto :eof
+)
+if /i "%TARGET%"=="all" (
+    call :stop_local_api
+    call :stop_local_web
+    call :stop_middleware
+    call :start_middleware
+    call :start_local_api
+    call :start_local_web
+    goto :eof
+)
+
+:: Restart middleware only
 call :get_services %TARGET%
 if errorlevel 1 exit /b 1
-
 %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" stop %SERVICES%
-:: Enable polling-based file watch for Windows Docker (nodemon)
-if /i "%TARGET%"=="web" set "USE_NODEMON=true"
-if /i "%TARGET%"=="all" set "USE_NODEMON=true"
-%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES% 
-
+%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES%
 call :print_success "%TARGET% services restarted successfully!"
 goto :eof
 
@@ -236,43 +365,33 @@ if "%TARGET%"=="middleware" (
 
 if "%TARGET%"=="api" (
     call :print_info "Installing Go dependencies..."
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" exec gaap-api go mod download 2>nul || (
-        cd gaap-api
-        go mod download
-        cd ..
-    )
+    cd gaap-api
+    go mod download
+    cd ..
     call :print_success "Go dependencies installed!"
     goto :install_deps_done
 )
 
 if "%TARGET%"=="web" (
     call :print_info "Installing Node.js dependencies..."
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" stop gaap-web 2>nul
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" rm -f gaap-web 2>nul
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" build --no-cache gaap-web
-    :: Enable polling-based file watch for Windows Docker (nodemon)
-    set "USE_NODEMON=true"
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d gaap-web
+    cd gaap-web
+    call npm install
+    cd ..
     call :print_success "Node.js dependencies installed!"
     goto :install_deps_done
 )
 
 if "%TARGET%"=="all" (
     call :print_info "Installing Go dependencies..."
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" exec gaap-api go mod download 2>nul || (
-        cd gaap-api
-        go mod download
-        cd ..
-    )
+    cd gaap-api
+    go mod download
+    cd ..
     call :print_success "Go dependencies installed!"
     
     call :print_info "Installing Node.js dependencies..."
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" stop gaap-web 2>nul
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" rm -f gaap-web 2>nul
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" build --no-cache gaap-web
-    :: Enable polling-based file watch for Windows Docker (nodemon)
-    set "USE_NODEMON=true"
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d gaap-web
+    cd gaap-web
+    call npm install
+    cd ..
     call :print_success "Node.js dependencies installed!"
 )
 
@@ -282,24 +401,57 @@ goto :eof
 
 :rebuild
 call :print_header "Rebuilding %TARGET% services"
+
+:: Handle local services (api/web) differently from middleware
+if /i "%TARGET%"=="api" (
+    call :print_info "Rebuilding API server..."
+    cd gaap-api
+    go clean -cache
+    go mod download
+    cd ..
+    call :print_success "API server rebuilt!"
+    goto :rebuild_done
+)
+
+if /i "%TARGET%"=="web" (
+    call :print_info "Rebuilding Web application..."
+    cd gaap-web
+    if exist "node_modules\.next" rmdir /s /q node_modules\.next
+    call npm install
+    cd ..
+    call :print_success "Web application rebuilt!"
+    goto :rebuild_done
+)
+
+if /i "%TARGET%"=="all" (
+    call :print_info "Rebuilding API server..."
+    cd gaap-api
+    go clean -cache
+    go mod download
+    cd ..
+    call :print_success "API server rebuilt!"
+    
+    call :print_info "Rebuilding Web application..."
+    cd gaap-web
+    if exist "node_modules\.next" rmdir /s /q node_modules\.next
+    call npm install
+    cd ..
+    call :print_success "Web application rebuilt!"
+    
+    call :print_info "Rebuilding middleware..."
+    call :stop_middleware
+    call :start_middleware
+    goto :rebuild_done
+)
+
+:: Rebuild middleware only
 call :get_services %TARGET%
 if errorlevel 1 exit /b 1
-
 call :print_info "Services: %SERVICES%"
+call :stop_middleware
+call :start_middleware
 
-:: Stop and remove containers to clear anonymous volumes
-%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" stop %SERVICES%
-%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" rm -f %SERVICES%
-
-:: Rebuild images
-%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" build %SERVICES%
-
-:: Start services
-:: Enable polling-based file watch for Windows Docker (nodemon)
-if /i "%TARGET%"=="web" set "USE_NODEMON=true"
-if /i "%TARGET%"=="all" set "USE_NODEMON=true"
-%DOCKER_COMPOSE% -f "%COMPOSE_FILE%" up -d %SERVICES% 
-
+:rebuild_done
 call :print_success "%TARGET% services rebuilt and started!"
 call :print_info "Hot-reload is active. Changes to source files will be reflected automatically."
 goto :eof
@@ -324,9 +476,13 @@ if "!EXEC_CMD!"=="" (
 )
 
 if "%EXEC_TARGET%"=="api" (
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" exec gaap-api !EXEC_CMD!
+    cd gaap-api
+    cmd /c !EXEC_CMD!
+    cd ..
 ) else if "%EXEC_TARGET%"=="web" (
-    %DOCKER_COMPOSE% -f "%COMPOSE_FILE%" exec gaap-web !EXEC_CMD!
+    cd gaap-web
+    cmd /c !EXEC_CMD!
+    cd ..
 ) else (
     call :print_error "exec only supports 'api' or 'web' targets"
     exit /b 1
@@ -349,34 +505,35 @@ echo     status              Show service status
 echo     clean [target]      Clean up containers and volumes (default: all)
 echo     install [target]    Install/reinstall dependencies (default: all)
 echo     rebuild [target]    Rebuild and restart services (default: all)
-echo     exec ^<target^> ^<cmd^> Execute command in container (api/web only)
+echo     exec ^<target^> ^<cmd^> Execute command in local directory (api/web only)
 echo     help                Show this help message
 echo.
 echo Targets:
-echo     middleware          PostgreSQL, Redis, RabbitMQ, Caddy
-echo     api                 GAAP API (GoFrame backend)
-echo     web                 GAAP Web (Next.js frontend)
+echo     middleware          PostgreSQL, Redis, RabbitMQ (Docker containers)
+echo     api                 GAAP API (GoFrame backend) - Runs locally with hot-reload
+echo     web                 GAAP Web (Next.js frontend) - Runs locally with HMR
 echo     all                 All services (default)
 echo.
 echo Examples:
 echo     start-dev.bat start                    # Start all services
 echo     start-dev.bat start middleware         # Start only middleware
 echo     start-dev.bat restart web              # Restart web service
-echo     start-dev.bat logs api web             # View API and web logs together
-echo     start-dev.bat clean web                # Clean web service
+echo     start-dev.bat logs middleware          # View middleware logs
+echo     start-dev.bat clean middleware         # Clean middleware containers
 echo     start-dev.bat install web              # Reinstall npm dependencies
 echo     start-dev.bat rebuild api              # Rebuild API service
-echo     start-dev.bat exec api go test ./...   # Run tests in API container
-echo     start-dev.bat exec web npm run lint    # Run linting in web container
+echo     start-dev.bat exec api go test ./...   # Run tests in API directory
+echo     start-dev.bat exec web npm run lint    # Run linting in web directory
 echo.
 echo Hot-Reload:
-echo     - API: Uses 'air' for automatic Go rebuilds
-echo     - Web: Uses Next.js built-in hot-reload (Turbopack)
+echo     - API: Uses 'air' for automatic Go rebuilds (http://localhost:8000)
+echo     - Web: Uses Next.js built-in HMR (http://localhost:3000)
 echo.
 echo Notes:
-echo     - Source code is mounted into containers for hot-reload
+echo     - API and Web services run locally on Windows for optimal HMR performance
+echo     - Middleware (Postgres, Redis, RabbitMQ) run in Docker containers
 echo     - Use 'install' or 'rebuild' to refresh dependencies
-echo     - Use 'clean' to remove containers and anonymous volumes
+echo     - Use 'clean' to remove middleware containers and volumes
 echo.
 goto :eof
 

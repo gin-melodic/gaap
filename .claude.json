@@ -1,0 +1,12 @@
+{
+  "commands": {
+    "autoApprove": [
+      "ls",
+      "cat",
+      "grep",
+      "go test",
+      "npm run proto"
+    ]
+  },
+  "customInstructions": "You are a senior full-stack engineer for GAAP. Always refer to CLAUDE.md for project-specific constraints."
+}

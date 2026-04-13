@@ -31,3 +31,4 @@ volumes/
 # OS
 .DS_Store
 Thumbs.db
+*.crt
