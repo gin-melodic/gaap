@@ -120,9 +120,17 @@ API 启动必须成功连接 PostgreSQL、Redis 和 RabbitMQ 并完成迁移；r
 - **已完成**：`/v1/health/live` 和 `/v1/health/ready`。
 - **已完成**：本地加密备份与独立恢复数据库演练。
 - **已完成**：`gaap.local` HTTPS UAT 环境。
-- **待完成**：VPS Secret、`gaap.cc` DNS/HTTPS、真实 Turnstile 域名、安全响应头、
-  每日备份定时任务和生产恢复演练。
-- **待完成**：生产基础设施镜像固定到已验证精确版本或 digest。
+- **已完成**：生产 Secret 生成并以 `0600` 权限部署；API/Web 使用已验证的
+  `linux/amd64` 精确 digest，生产基础设施启动 5 个迁移。
+- **已完成**：VPS 上 API/Web/PostgreSQL/Redis/RabbitMQ 健康；两个 RabbitMQ 队列各
+  1 个消费者且无积压；空生产库只读对账通过。
+- **部分完成**：RabbitMQ 重启期间 ready 返回 503 并在 14 秒恢复，Redis 和 API
+  重启后分别在 0 秒和 1 秒恢复；重启后只读对账再次通过。
+- **阻断**：Cloudflare 当前 token 无权访问 `gaap.cc` zone；`www.gaap.cc` 为 NXDOMAIN，
+  公网 `gaap.cc` 仍返回旧 JSON 404，因此 HTTPS、安全头、真实 Turnstile 和公网业务
+  smoke 尚不能执行。
+- **DEFERRED / NO-GO**：按发布负责人决定，本轮不执行生产备份、独立恢复演练和每日
+  备份任务；该发布门禁没有被视为 PASS。
 
 ## 4. 测试与发布门禁
 
@@ -167,7 +175,11 @@ RabbitMQ/Dashboard 丢刷新、迁移失败、备份无法恢复。
 - **已完成**：8 个历史回归和全部 74 个 CORE GATE；
 - **已完成**：只读账务对账、并发、故障回滚、历史日期 Dashboard 和 RabbitMQ 自动
   恢复门禁；
-- **待外部资料**：VPS 预生产、DNS/HTTPS、真实 Turnstile、安全头和生产备份恢复。
+- **已完成**：三仓库发布分支与草稿 PR、API/Web 候选镜像和不可变 digest；生产候选
+  已部署到 `/opt/gaap` 的隔离端口，迁移、健康、消费者、依赖重启和空库对账通过。
+- **外部阻断**：需要可管理 `gaap.cc` zone 的 Cloudflare DNS 权限，并将 apex 指向
+  `144.34.237.205`、创建 `www` 记录，才能完成 HTTPS、真实 Turnstile 和公网 smoke。
+- **主动延期**：生产备份、独立恢复演练和每日备份任务本轮不执行，最终保持 NO-GO。
 
 ### 8 月 14 日周五上午
 
@@ -190,16 +202,18 @@ RabbitMQ/Dashboard 丢刷新、迁移失败、备份无法恢复。
 
 ## 6. 当前 Go / No-Go
 
-截至 2026-08-13：**本地 RC 门禁 GO-ready；公网发布仍为 NO-GO**。
+截至 2026-08-13：**本地 RC 与 VPS 容器门禁通过；公网发布仍为 NO-GO**。
 
 本地 UAT、账务、API/Web 自动化、Compose 与 production build 已通过，没有未关闭的
-Beta P0/P1。公网发布仍被以下外部门禁阻止：
+Beta P0/P1。API/Web PR CI 已通过，候选镜像已发布并以 digest 部署。公网发布仍被以下
+门禁阻止：
 
-- 三仓库 push、草稿 PR、GitHub Actions 和 GHCR digest 尚待完成；
-- VPS、真实 DNS/HTTPS/Turnstile、生产 Secret、安全头和生产备份恢复尚未验收。
-
-候选提交 SHA、PR、CI、镜像标签与 digest 将在发布产物生成后填入本计划，禁止使用
-`latest` 或未记录 digest 的镜像部署。
+- `gaap.cc` Cloudflare zone 不在 VPS 现有 token 的授权范围内；公开 apex 仍路由到旧
+  JSON 404，`www.gaap.cc` 无 DNS 记录，Caddy 无法为新站点完成证书签发；
+- 因真实域名不可达，HTTPS 重定向、安全头、Turnstile 注册及生产业务 smoke 未执行；
+- 发布负责人决定本轮不做生产备份、独立恢复演练和每日备份任务，该阻断保持
+  DEFERRED，不降级为 PASS；
+- 根 PR 的最新 CI 仍需等待 `826b5cf` 触发的运行完成。
 
 ## 7. 候选产物记录
 
@@ -210,5 +224,14 @@ Beta P0/P1。公网发布仍被以下外部门禁阻止：
   `ghcr.io/gin-melodic/gaap-api:beta-2026-08-14-2a163356eca1b5edb6b66a87a467aadeddf37dcb`。
 - Web 候选标签：
   `ghcr.io/gin-melodic/gaap-web:beta-2026-08-14-6862ca2825b0b2da86760ada4a84507f46c47eaf`。
-- GHCR digest、三仓库 PR 和 CI：等待远端认证后填写。
-- 预生产 Compose 必须使用发布后的 `image@sha256:...`，不得直接部署上述可变标签。
+- API digest：`sha256:7e7546fef26de2da228c13b9db4658dddc1cf439d6b93e1773dcfc3ac75e5be8`。
+- Web digest：`sha256:4c3ef686d0085c854695f2fb1ba74a7b06010e641a888c4f362ed32c7191e3fc`。
+- 根候选基础设施提交：`826b5cf46587554526710cc83f79b3045ac2f9b2`。
+- 草稿 PR：根仓库 [#2](https://github.com/gin-melodic/gaap/pull/2)、API
+  [#5](https://github.com/gin-melodic/gaap-api/pull/5)、Web
+  [#8](https://github.com/gin-melodic/gaap-web/pull/8)。
+- API/Web CI：PASS；根 CI：最新运行等待完成。
+- GitHub Actions secrets 已登记 `BETA_ALE_BOOTSTRAP_KEY` 与
+  `BETA_TURNSTILE_SITE_KEY`；未在证据中记录 Secret 值。
+- VPS Compose 使用上述 `image@sha256:...`，未部署 `latest`；执行证据见
+  [`UAT-20260813-VPS-RC-01`](uat/runs/2026-08-13-vps-rc-01.md)。

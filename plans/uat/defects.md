@@ -15,7 +15,7 @@
 | DEF-009 | P0 | 交易事务 | 创建交易失败路径可能未回滚，提交错误被忽略 | RESOLVED / FAILURE-INJECTION + UAT PASS | TC-EDGE-DATA-001 | 316bc88 + 工作区待提交 |
 | DEF-010 | P0 | 协议 | 前端 JSON 与 ALE+PB 请求栈并存 | IMPLEMENTED / SMOKE TESTED | 协议集成测试 | release 分支待提交 |
 | DEF-011 | P0 | 金额 | 前端 Dashboard/账户汇总使用 number 与硬编码汇率 | IMPLEMENTED / TESTED | 金额边界测试 | release 分支待提交 |
-| DEF-012 | P0 | 部署 | 生产 Compose、迁移版本和可用性探针不完整 | PARTIAL / VPS SMOKE REQUIRED | 部署 smoke test | release 分支待提交 |
+| DEF-012 | P0 | 部署 | 生产 Compose、迁移版本和可用性探针不完整 | PARTIAL / VPS CONTAINERS PASS / PUBLIC DNS BLOCKED | 部署 smoke test | `826b5cf` |
 | DEF-013 | P0 | 认证 | 登录 Turnstile 未在服务端校验，浏览器预哈希导致弱密码可绕过 UI 校验；6 位密码曾可提交且只显示通用失败 | RESOLVED / FULL AUTH UAT PASS | TC-AUTH-REG-003 至 005、TC-AUTH-LOGIN-001 至 003 | 工作区待提交 |
 | DEF-014 | P0 | 交易/即时开户 | 即时创建支出账户后未使用返回账户类型，资产→支出被误提交为转账并遗留孤儿账户 | RESOLVED / UAT PASS | TC-TXN-CREATE-002、即时创建支出账户扩展场景 | release 分支待提交 |
 | DEF-015 | P0 | ALE/交易删除 | Redis 中 session key 缺失时未形成可识别的 401，前端直接暴露 `OperationError`；删除请求实际未进入控制器 | RESOLVED / UAT PASS | 删除交易、Redis 重启后 session、session key 同步恢复扩展场景 | release 分支待提交 |
@@ -32,4 +32,6 @@
 `IMPLEMENTED` 只表示代码整改已完成，不等同于 UAT `PASS`。2026-08-13 批次
 `UAT-20260813-BETA-RC-01` 已完成协议、浏览器、ALE 攻击、依赖恢复和只读对账，Beta
 范围缺陷均完成复测；最终对账检查 142 个账户、62 笔交易且无差异或完整性异常。
-公网 DNS、HTTPS、真实 Turnstile 和生产备份恢复仍需在 VPS 验证。
+VPS 容器、迁移、消费者、重启恢复和空库对账已通过。Cloudflare token 无权访问
+`gaap.cc` zone，且 `www` 为 NXDOMAIN，故公网 DNS、HTTPS、真实 Turnstile 和业务 smoke
+仍被阻断；生产备份恢复按发布负责人决定保持 DEFERRED / NO-GO。
