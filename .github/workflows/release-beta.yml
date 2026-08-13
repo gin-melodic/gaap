@@ -1,0 +1,59 @@
+name: Beta Release Gate
+
+on:
+  push:
+    branches: [main, develop, 'codex/**']
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: gaap-api/go.sum
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: gaap-web/package-lock.json
+
+      - name: Install generators
+        run: go install github.com/gogf/gf/cmd/gf/v2@v2.9.8
+
+      - name: Verify API
+        working-directory: gaap-api
+        run: |
+          go test ./...
+          go build ./...
+          gf gen pb
+          gf gen service
+
+      - name: Verify Web
+        working-directory: gaap-web
+        run: |
+          npm ci
+          npm run proto
+          npm run test -- --run
+          npm run lint
+          npx tsc --noEmit
+
+      - name: Verify generated code is committed
+        run: |
+          git -C gaap-api diff --exit-code -- api internal/service
+          git -C gaap-web diff --exit-code -- src/lib/proto
+
+      - name: Build production images
+        run: |
+          docker build --target production -t gaap-api:ci ./gaap-api
+          docker build --target production \
+            --build-arg NEXT_PUBLIC_ALE_BOOTSTRAP_KEY=abababababababababababababababababababababababababababababababab \
+            --build-arg NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA \
+            -t gaap-web:ci ./gaap-web

@@ -18,7 +18,7 @@ gaap.cc, www.gaap.cc {
     # API routes
     handle_path /api/* {
         reverse_proxy gaap-api:8000 {
-            health_uri /v1/health
+            health_uri /v1/health/ready
             health_interval 30s
             health_timeout 10s
             
@@ -57,6 +57,7 @@ gaap.cc, www.gaap.cc {
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
         -Server
     }
 

@@ -88,7 +88,7 @@ start_local_api() {
         cd "$SCRIPT_DIR"
         return 1
     fi
-    
+
     # Sync .env file
     print_info "Syncing .env file to API directory..."
     cp ../.env .env
@@ -97,20 +97,24 @@ start_local_api() {
                -e 's/REDIS_HOST=redis/REDIS_HOST=127.0.0.1/g' \
                -e 's/RABBITMQ_HOST=rabbitmq/RABBITMQ_HOST=127.0.0.1/g' .env
     rm -f .env.bak
-    
+
     print_info "Installing Go dependencies..."
     go mod download
-    print_info "Starting API server with hot-reload..."
-    air &
+    print_info "Starting API server with hot-reload in screen session 'gaap-api'..."
+    mkdir -p "$SCRIPT_DIR/logs"
+    screen -dmS gaap-api bash -c "cd '$SCRIPT_DIR/gaap-api' && air 2>&1 | tee '$SCRIPT_DIR/logs/api.log'; exec bash"
     cd "$SCRIPT_DIR"
     print_success "GAAP API started on http://localhost:8000"
-    print_info "Press Ctrl+C to stop"
+    print_info "Attach: screen -r gaap-api   Stop: ./start-dev.sh stop api"
 }
 
 stop_local_api() {
     print_header "Stopping GAAP API (Local)"
-    pkill -f "air" 2>/dev/null || print_info "API process not found or already stopped"
-    print_success "GAAP API stopped successfully!"
+    if screen -S gaap-api -X quit 2>/dev/null; then
+        print_success "GAAP API stopped successfully!"
+    else
+        print_info "API screen session not found or already stopped"
+    fi
 }
 
 start_local_web() {
@@ -121,7 +125,7 @@ start_local_web() {
         cd "$SCRIPT_DIR"
         return 1
     fi
-    
+
     # Sync .env file
     print_info "Syncing .env file to Web directory as .env.local..."
     cp ../.env .env.local
@@ -132,22 +136,26 @@ start_local_web() {
                -e 's/^ALE_BOOTSTRAP_KEY=/NEXT_PUBLIC_ALE_BOOTSTRAP_KEY=/g' \
                -e 's/^TURNSTILE_SITE_KEY=/NEXT_PUBLIC_TURNSTILE_SITE_KEY=/g' .env.local
     rm -f .env.local.bak
-    
+
     if [ ! -d "node_modules" ]; then
         print_info "Installing Node.js dependencies..."
         npm install
     fi
-    print_info "Starting Next.js development server..."
-    npm run dev &
+    print_info "Starting Next.js development server in screen session 'gaap-web'..."
+    mkdir -p "$SCRIPT_DIR/logs"
+    screen -dmS gaap-web bash -c "cd '$SCRIPT_DIR/gaap-web' && npm run dev 2>&1 | tee '$SCRIPT_DIR/logs/web.log'; exec bash"
     cd "$SCRIPT_DIR"
     print_success "GAAP Web started on http://localhost:3000"
-    print_info "Press Ctrl+C to stop"
+    print_info "Attach: screen -r gaap-web   Stop: ./start-dev.sh stop web"
 }
 
 stop_local_web() {
     print_header "Stopping GAAP Web (Local)"
-    pkill -f "next dev" 2>/dev/null || print_info "Web process not found or already stopped"
-    print_success "GAAP Web stopped successfully!"
+    if screen -S gaap-web -X quit 2>/dev/null; then
+        print_success "GAAP Web stopped successfully!"
+    else
+        print_info "Web screen session not found or already stopped"
+    fi
 }
 
 # Get services based on target
@@ -178,112 +186,159 @@ get_services() {
 # Core Functions
 # =============================================================================
 
-# Start services
+# Start services (supports multiple targets)
 start_services() {
-    local target=${1:-all}
-    
-    # Handle local services (api/web) differently from middleware
-    if [ "$target" = "api" ]; then
-        start_local_api
-        return
+    local targets="${@:-all}"
+    local has_middleware=0
+
+    for target in $targets; do
+        case $target in
+            api)
+                start_local_api
+                ;;
+            web)
+                start_local_web
+                ;;
+            all)
+                start_middleware
+                start_local_api
+                start_local_web
+                return
+                ;;
+            *)
+                has_middleware=1
+                local services=$(get_services "$target")
+                print_header "Starting $target services"
+                print_info "Services: $services"
+                $DOCKER_COMPOSE -f "$COMPOSE_FILE" up -d $services
+                print_success "$target services started successfully!"
+                echo ""
+                print_info "To view logs, run: ./start-dev.sh logs $target"
+                ;;
+        esac
+    done
+
+    if [ "$has_middleware" -eq 1 ]; then
+        echo ""
+        print_info "To view logs, run: ./start-dev.sh logs $targets"
     fi
-    if [ "$target" = "web" ]; then
-        start_local_web
-        return
-    fi
-    if [ "$target" = "all" ]; then
-        start_middleware
-        start_local_api
-        start_local_web
-        return
-    fi
-    
-    # Start middleware only
-    local services=$(get_services "$target")
-    print_header "Starting $target services"
-    print_info "Services: $services"
-    $DOCKER_COMPOSE -f "$COMPOSE_FILE" up -d $services
-    print_success "$target services started successfully!"
-    echo ""
-    print_info "To view logs, run: ./start-dev.sh logs $target"
 }
 
-# Stop services
+# Stop services (supports multiple targets)
 stop_services() {
-    local target=${1:-all}
-    
-    # Handle local services (api/web) differently from middleware
-    if [ "$target" = "api" ]; then
-        stop_local_api
-        return
-    fi
-    if [ "$target" = "web" ]; then
-        stop_local_web
-        return
-    fi
-    if [ "$target" = "all" ]; then
-        stop_local_api
-        stop_local_web
-        stop_middleware
-        return
-    fi
-    
-    # Stop middleware only
-    local services=$(get_services "$target")
-    print_header "Stopping $target services"
-    print_info "Services: $services"
-    $DOCKER_COMPOSE -f "$COMPOSE_FILE" stop $services
-    print_success "$target services stopped successfully!"
+    local targets="${@:-all}"
+
+    for target in $targets; do
+        case $target in
+            api)
+                stop_local_api
+                ;;
+            web)
+                stop_local_web
+                ;;
+            all)
+                stop_local_api
+                stop_local_web
+                stop_middleware
+                return
+                ;;
+            *)
+                local services=$(get_services "$target")
+                print_header "Stopping $target services"
+                print_info "Services: $services"
+                $DOCKER_COMPOSE -f "$COMPOSE_FILE" stop $services
+                print_success "$target services stopped successfully!"
+                ;;
+        esac
+    done
 }
 
-# Restart services
+# Restart services (supports multiple targets)
 restart_services() {
-    local target=${1:-all}
-    
-    # Handle local services (api/web) differently from middleware
-    if [ "$target" = "api" ]; then
-        stop_local_api
-        start_local_api
-        return
-    fi
-    if [ "$target" = "web" ]; then
-        stop_local_web
-        start_local_web
-        return
-    fi
-    if [ "$target" = "all" ]; then
-        stop_local_api
-        stop_local_web
-        stop_middleware
-        start_middleware
-        start_local_api
-        start_local_web
-        return
-    fi
-    
-    # Restart middleware only
-    stop_services "$target"
-    start_services "$target"
+    local targets="${@:-all}"
+
+    for target in $targets; do
+        case $target in
+            api)
+                stop_local_api
+                start_local_api
+                ;;
+            web)
+                stop_local_web
+                start_local_web
+                ;;
+            all)
+                stop_local_api
+                stop_local_web
+                stop_middleware
+                start_middleware
+                start_local_api
+                start_local_web
+                return
+                ;;
+            *)
+                local services=$(get_services "$target")
+                print_info "Services: $services"
+                $DOCKER_COMPOSE -f "$COMPOSE_FILE" stop $services
+                $DOCKER_COMPOSE -f "$COMPOSE_FILE" up -d $services
+                print_success "$target services restarted successfully!"
+                ;;
+        esac
+    done
 }
 
 # Show service logs (supports multiple targets)
 show_logs() {
     local targets="${@:-all}"
     local all_services=""
+    local local_logs=""
     
     # Collect services from all specified targets
     for target in $targets; do
-        local services=$(get_services "$target")
-        all_services="$all_services $services"
+        case $target in
+            api)
+                local_logs="$local_logs $SCRIPT_DIR/logs/api.log"
+                ;;
+            web)
+                local_logs="$local_logs $SCRIPT_DIR/logs/web.log"
+                ;;
+            all)
+                local_logs="$local_logs $SCRIPT_DIR/logs/api.log $SCRIPT_DIR/logs/web.log"
+                all_services="$all_services $MIDDLEWARE_SERVICES"
+                ;;
+            *)
+                local services=$(get_services "$target")
+                all_services="$all_services $services"
+                ;;
+        esac
     done
     
-    # Remove leading space and deduplicate
-    all_services=$(echo $all_services | tr ' ' '\n' | sort -u | tr '\n' ' ')
-    
     print_header "Showing logs for: $targets"
-    print_info "Services: $all_services"
     
-    $DOCKER_COMPOSE -f "$COMPOSE_FILE" logs -f $all_services
+    # Remove leading spaces and deduplicate docker services
+    all_services=$(echo $all_services | tr ' ' '\n' | sort -u | tr '\n' ' ' | sed 's/^ *//;s/ *$//')
+    local_logs=$(echo $local_logs | sed 's/^ *//;s/ *$//')
+    
+    if [ -n "$all_services" ]; then
+        print_info "Services: $all_services"
+        $DOCKER_COMPOSE -f "$COMPOSE_FILE" logs -f $all_services &
+        local docker_pid=$!
+    fi
+    
+    if [ -n "$local_logs" ]; then
+        for log in $local_logs; do
+            if [ -f "$log" ]; then
+                print_info "Local log: $log"
+            else
+                print_warning "Log file not found: $log (service may not be running)"
+            fi
+        done
+        tail -f $local_logs &
+        local tail_pid=$!
+    fi
+    
+    # Wait for all background log processes
+    wait ${docker_pid:-} ${tail_pid:-} 2>/dev/null || true
 }
 
 # Show service status
@@ -445,12 +500,12 @@ show_help() {
     echo -e "${BLUE}GAAP Development Environment Management Script${NC}"
     echo ""
     echo -e "${YELLOW}Usage:${NC}"
-    echo "    ./start-dev.sh <command> [target]"
+    echo "    ./start-dev.sh <command> [target...]"
     echo ""
     echo -e "${YELLOW}Commands:${NC}"
-    echo "    start [target]      Start services (default: all)"
-    echo "    stop [target]       Stop services (default: all)"
-    echo "    restart [target]    Restart services (default: all)"
+    echo "    start [targets...]  Start services, supports multiple (default: all)"
+    echo "    stop [targets...]   Stop services, supports multiple (default: all)"
+    echo "    restart [targets...] Restart services, supports multiple (default: all)"
     echo "    logs [targets...]   Show service logs, supports multiple (default: all)"
     echo "    status              Show service status"
     echo "    clean [target]      Clean up containers and volumes (default: all)"
@@ -468,6 +523,7 @@ show_help() {
     echo -e "${YELLOW}Examples:${NC}"
     echo "    ./start-dev.sh start                    # Start all services"
     echo "    ./start-dev.sh start middleware         # Start only middleware"
+    echo "    ./start-dev.sh start api web            # Start api and web in screen"
     echo "    ./start-dev.sh restart web              # Restart web service"
     echo "    ./start-dev.sh logs middleware          # View middleware logs"
     echo "    ./start-dev.sh clean middleware         # Clean middleware containers"
@@ -479,6 +535,10 @@ show_help() {
     echo -e "${YELLOW}Hot-Reload:${NC}"
     echo "    - API: Uses 'air' for automatic Go rebuilds (http://localhost:8000)"
     echo "    - Web: Uses Next.js built-in HMR (http://localhost:3000)"
+    echo ""
+    echo -e "${YELLOW}Screen Sessions:${NC}"
+    echo "    - API runs in screen session 'gaap-api' (attach: screen -r gaap-api)"
+    echo "    - Web runs in screen session 'gaap-web' (attach: screen -r gaap-web)"
     echo ""
     echo -e "${YELLOW}Notes:${NC}"
     echo "    - API and Web services run locally for optimal HMR performance"
@@ -492,6 +552,16 @@ show_help() {
 # Main
 # =============================================================================
 
+# Parse command
+command=${1:-help}
+target=${2:-all}
+
+# Handle help first (no need for Docker)
+if [ "$command" = "help" ] || [ "$command" = "--help" ] || [ "$command" = "-h" ]; then
+    show_help
+    exit 0
+fi
+
 # Check if docker-compose file exists
 if [ ! -f "$COMPOSE_FILE" ]; then
     print_error "Docker compose file not found: $COMPOSE_FILE"
@@ -504,19 +574,18 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Parse command
-command=${1:-help}
-target=${2:-all}
-
 case $command in
     start)
-        start_services "$target"
+        shift  # Remove 'start'
+        start_services "$@"
         ;;
     stop)
-        stop_services "$target"
+        shift  # Remove 'stop'
+        stop_services "$@"
         ;;
     restart)
-        restart_services "$target"
+        shift  # Remove 'restart'
+        restart_services "$@"
         ;;
     logs)
         shift  # Remove 'logs' from arguments
@@ -535,11 +604,8 @@ case $command in
         rebuild "$target"
         ;;
     exec)
-        shift 2 2>/dev/null || shift 1
+        shift 2>/dev/null || shift 1
         exec_cmd "$target" "$@"
-        ;;
-    help|--help|-h)
-        show_help
         ;;
     *)
         print_error "Unknown command: $command"
