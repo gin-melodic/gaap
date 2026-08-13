@@ -212,8 +212,7 @@ Beta P0/P1。API/Web PR CI 已通过，候选镜像已发布并以 digest 部署
   JSON 404，`www.gaap.cc` 无 DNS 记录，Caddy 无法为新站点完成证书签发；
 - 因真实域名不可达，HTTPS 重定向、安全头、Turnstile 注册及生产业务 smoke 未执行；
 - 发布负责人决定本轮不做生产备份、独立恢复演练和每日备份任务，该阻断保持
-  DEFERRED，不降级为 PASS；
-- 根 PR 的最新 CI 仍需等待 `826b5cf` 触发的运行完成。
+  DEFERRED，不降级为 PASS。
 
 ## 7. 候选产物记录
 
@@ -230,7 +229,7 @@ Beta P0/P1。API/Web PR CI 已通过，候选镜像已发布并以 digest 部署
 - 草稿 PR：根仓库 [#2](https://github.com/gin-melodic/gaap/pull/2)、API
   [#5](https://github.com/gin-melodic/gaap-api/pull/5)、Web
   [#8](https://github.com/gin-melodic/gaap-web/pull/8)。
-- API/Web CI：PASS；根 CI：最新运行等待完成。
+- API/Web/根 CI：PASS。
 - GitHub Actions secrets 已登记 `BETA_ALE_BOOTSTRAP_KEY` 与
   `BETA_TURNSTILE_SITE_KEY`；未在证据中记录 Secret 值。
 - VPS Compose 使用上述 `image@sha256:...`，未部署 `latest`；执行证据见
