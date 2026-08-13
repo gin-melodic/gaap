@@ -30,6 +30,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes protobuf-compiler
           go install github.com/gogf/gf/cmd/gf/v2@v2.9.8
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.1
 
       - name: Verify API
         working-directory: gaap-api
