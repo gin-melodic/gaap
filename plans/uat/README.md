@@ -40,4 +40,5 @@ Beta UAT 时误选，也避免同一个用例在多个文件重复维护。
 - [非 Beta 延期测试用例](deferred.md)
 - [缺陷清单](defects.md)
 - [自动化 Smoke 记录](smoke-runs.md)
+- [自动化与对账执行记录](automated-runs.md)
 - [人工 UAT 批次记录](manual-runs.md)

@@ -59,6 +59,17 @@ curl --fail https://gaap.cc/api/v1/health/ready
 随后按 `plans/uat/` 执行公网白名单注册、登录、账户、收入/支出/转账、交易更新与
 删除、余额核对、刷新轮换、退出、容器重启恢复和 HTTPS 安全头 smoke test。
 
+在开放白名单前执行只读账务对账；`passed` 必须为 `true`，`differences` 和 `issues`
+必须为空：
+
+```sh
+docker compose --env-file .env.production -f docker-compose.production.yml \
+  run --rm --no-deps gaap-api ./reconcile
+```
+
+命令会在读取前启用 PostgreSQL `REPEATABLE READ, READ ONLY`。退出码 `2` 表示发现
+账务差异或完整性异常，此时禁止发布并保留数据库现场，不要手工改余额。
+
 ## 备份与恢复
 
 每日运行：
