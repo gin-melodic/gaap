@@ -26,7 +26,10 @@ jobs:
           cache-dependency-path: gaap-web/package-lock.json
 
       - name: Install generators
-        run: go install github.com/gogf/gf/cmd/gf/v2@v2.9.8
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes protobuf-compiler
+          go install github.com/gogf/gf/cmd/gf/v2@v2.9.8
 
       - name: Verify API
         working-directory: gaap-api
