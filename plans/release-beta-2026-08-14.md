@@ -177,16 +177,21 @@ RabbitMQ/Dashboard 丢刷新、迁移失败、备份无法恢复。
   恢复门禁；
 - **已完成**：三仓库发布分支与草稿 PR、API/Web 候选镜像和不可变 digest；生产候选
   已部署到 `/opt/gaap` 的隔离端口，迁移、健康、消费者、依赖重启和空库对账通过。
-- **外部阻断**：需要可管理 `gaap.cc` zone 的 Cloudflare DNS 权限，并将 apex 指向
-  `144.34.237.205`、创建 `www` 记录，才能完成 HTTPS、真实 Turnstile 和公网 smoke。
+- **已完成**：Cloudflare DNS、Caddy HTTPS 与安全头恢复；真实 Turnstile 签发 token，
+  `windane@gmail.com` 白名单生产注册通过。执行跨过 2026-08-14 00:00，剩余生产 smoke
+  转入 8 月 14 日白天，不回填为 8 月 13 日完成。
 - **主动延期**：生产备份、独立恢复演练和每日备份任务本轮不执行，最终保持 NO-GO。
 
 ### 8 月 14 日周五上午
 
-- 只修阻断缺陷，不增加功能；
-- 重新运行完整自动化、核心 UAT、账务对账和生产 smoke；
-- 生成 API/Web 不可变镜像标签并记录 digest；
-- 生成发布前数据库备份。
+- **待执行**：开启橙云后的源站直连验证，确认源站证书、Caddy 路由、API ready 和安全
+  响应头均绕过 Cloudflare 正常工作；
+- **待执行**：使用已注册白名单用户完成生产登录、账户、收入/支出/转账、交易更新与
+  删除、Dashboard、refresh 和 logout smoke；
+- **待执行**：真实业务数据只读账务对账、RabbitMQ 消费者/积压复核及最终日志扫描；
+- **待执行**：更新生产证据与 Go / No-Go，提交推送文档并确认三个工作区干净；
+- **已确认**：Caddyfile 权限已由发布负责人恢复，Cloudflare 橙云已开启且公网访问正常；
+- **DEFERRED**：发布前数据库备份、独立恢复演练和每日备份任务不在本轮执行。
 
 ### 8 月 14 日周五下午
 
@@ -202,15 +207,15 @@ RabbitMQ/Dashboard 丢刷新、迁移失败、备份无法恢复。
 
 ## 6. 当前 Go / No-Go
 
-截至 2026-08-13：**本地 RC 与 VPS 容器门禁通过；公网发布仍为 NO-GO**。
+截至 2026-08-14 00:00 后：**本地 RC、VPS 容器、DNS/HTTPS、真实 Turnstile 注册通过；
+生产业务 smoke 尚未收口，公网发布仍为 NO-GO**。
 
 本地 UAT、账务、API/Web 自动化、Compose 与 production build 已通过，没有未关闭的
 Beta P0/P1。API/Web PR CI 已通过，候选镜像已发布并以 digest 部署。公网发布仍被以下
 门禁阻止：
 
-- `gaap.cc` Cloudflare zone 不在 VPS 现有 token 的授权范围内；公开 apex 仍路由到旧
-  JSON 404，`www.gaap.cc` 无 DNS 记录，Caddy 无法为新站点完成证书签发；
-- 因真实域名不可达，HTTPS 重定向、安全头、Turnstile 注册及生产业务 smoke 未执行；
+- 橙云开启后的源站绕过验证尚未正式登记；
+- 生产登录、账户、交易、Dashboard、refresh、logout 及真实数据最终对账未执行；
 - 发布负责人决定本轮不做生产备份、独立恢复演练和每日备份任务，该阻断保持
   DEFERRED，不降级为 PASS。
 
