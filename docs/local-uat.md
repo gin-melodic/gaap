@@ -53,3 +53,7 @@ docker compose --env-file .env.uat -f docker-compose.uat.yml down -v
 - 38 个延期用例集中在 `plans/uat/deferred.md`，保持 `NOT RUN / DEFERRED`。
 - 发现缺陷时更新 `plans/uat/defects.md`，写明复现步骤、严重级别、修复提交和验证用例。
 - 不得因为自动化测试或 smoke 通过而直接把人工 UAT 用例改为 `PASS`。
+
+2026-08-13 批次 `UAT-20260813-BETA-RC-01` 已使用真实浏览器和真实 protobuf + ALE
+HTTPS 链路完成 82/82 Beta 用例；执行证据见
+`plans/uat/runs/2026-08-13-beta-rc-01.md`。38 个 DEFERRED 用例仍保持 NOT RUN。

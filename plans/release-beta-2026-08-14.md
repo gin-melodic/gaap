@@ -11,11 +11,11 @@
 
 ## 1. 当前基线与上线范围
 
-- 原 UAT 因问题过多而中止，仅 8 个用例有历史 PASS：
-  `TC-AUTH-REG-001` 至 `005`、`TC-AUTH-LOGIN-001` 至 `003`。
-- 其余 112 个原用例未执行，不视为失败或通过；逐条复核 Beta 协议、UI 和用户等级后
-  划分为 74 个 CORE GATE 和 38 个 DEFERRED。
-- 自动化测试当前基线：后端 121 个、前端 58 个通过，但不能替代人工 UAT。
+- 2026-08-13 批次 `UAT-20260813-BETA-RC-01` 已重跑 8 个历史 CORE REGRESSION 并
+  完成 74 个 CORE GATE：82/82 PASS，0 FAIL，0 NOT RUN。
+- 原 120 个用例中另有 38 个 DEFERRED，保持 NOT RUN，不计入 Beta 功能范围。
+- 自动化测试当前基线：后端 152 个、前端 74 个常规测试通过；真实浏览器和协议结果
+  单独登记为 UAT，不以单元测试替代。
 - 生产使用全新 PostgreSQL 数据库，不导入 UAT 数据。
 - Beta 采用服务端邮箱白名单、低并发邀请制和单用户基准币种。
 
@@ -53,9 +53,9 @@ API 启动必须成功连接 PostgreSQL、Redis 和 RabbitMQ 并完成迁移；r
 - RabbitMQ 连接仍存活；
 - 所有 `manifest/sql` 迁移已记录。
 
-任一核心依赖不可用时 API 不应接收流量。RabbitMQ 运行中重启后，若 ready 返回
-503，本版运行手册要求联动重启 API，以重新连接并注册消费者；完整 AMQP 自动重连
-列为上线前优先整改或明确接受的运行风险。
+任一核心依赖不可用时 API 不应接收流量。RabbitMQ 运行中重启时 ready 返回 503；
+连接监督器通过退避自动重连，2026-08-13 UAT 在 17 秒内恢复 ready 200，
+`gaap.dashboard` 与 `gaap.tasks` 各自动恢复 1 个消费者，无需重启 API。
 
 ## 3. 核心整改状态
 
@@ -66,7 +66,8 @@ API 启动必须成功连接 PostgreSQL、Redis 和 RabbitMQ 并完成迁移；r
 - **已完成**：原 Bug、TODO 和新增 UAT 问题合并到 `plans/uat/defects.md`。
 - **已完成**：2026-08-12 人工 UAT 批次通过；批次范围按
   `plans/uat/manual-runs.md` 记录。
-- **进行中**：将人工批次结果映射到逐用例证据，并完成尚未登记的 CORE GATE。
+- **已完成**：全量 UAT 结果映射到 82 个 Beta 用例，证据见
+  `plans/uat/runs/2026-08-13-beta-rc-01.md`。
 - **门禁**：核心用例不得保持 NOT RUN；DEFERRED 不得写成 PASS。
 
 ### ALE + Protobuf
@@ -76,7 +77,8 @@ API 启动必须成功连接 PostgreSQL、Redis 和 RabbitMQ 并完成迁移；r
 - **已完成**：JWT 使用 `sid`，Redis session 按用户与设备隔离，refresh 保持 sid 并轮换。
 - **已完成**：Redis session key 丢失时返回可识别的 401，不向用户暴露
   `OperationError`。
-- **待门禁**：篡改、重放、过期 timestamp、无效 sid、敏感日志扫描和两设备并发。
+- **门禁通过**：篡改、重放、过期 timestamp、无效 sid、敏感日志扫描和多设备独立
+  refresh/logout 全部通过。
 
 ### 账务安全与 Dashboard
 
@@ -93,10 +95,10 @@ API 启动必须成功连接 PostgreSQL、Redis 和 RabbitMQ 并完成迁移；r
 - **已完成**：有交易账户由后端拒绝删除，前端不再显示迁移删除界面。
 - **已完成自动化门禁**：历史日期交易创建、更新、删除后的趋势；固定 UUID 顺序行锁；
   第二账户更新失败时的事务回滚；跨全部账户类型的流水重算及 1 nano 差异边界。
-- **UAT 通过**：只读对账在 2026-08-13 检查 9 个账户、5 笔有效交易，无余额差异或
-  完整性异常；浏览器确认现有历史交易与 30 天 Dashboard 趋势正常加载。
-- **已实现 / 待 UAT**：账户组与子账户成功路径已延期；服务端已拒绝 Free/Beta 用户
-  直接提交 `is_group` 或 `parent_id`，并覆盖未指定、Free、Pro 等级边界测试。
+- **UAT 通过**：最终只读对账检查 142 个账户、62 笔有效交易，无余额差异或完整性
+  异常；真实浏览器与协议确认历史交易创建、移动日期、删除后的 30 天趋势正确收敛。
+- **UAT 通过**：账户组与子账户成功路径已延期；Free/Beta 用户直接提交 `is_group`
+  或 `parent_id` 均被拒绝，且账户与期初余额交易无脏写入。
 
 ### 启动余额与对账策略
 
@@ -161,13 +163,11 @@ RabbitMQ/Dashboard 丢刷新、迁移失败、备份无法恢复。
 
 ### 8 月 13 日周四
 
-- **已完成开发 / 待集成 UAT**：修复 DEF-019，增加账户组/子账户服务端等级门禁及
-  自动化边界测试；
-- 完成 8 个历史回归和本版全部 P0/P1 CORE GATE；
-- **已完成**：只读账务对账及并发锁、故障回滚、历史日期 Dashboard 自动化场景；
-- 验证 RabbitMQ 重启恢复方案；
-- 部署 VPS 预生产，验证生产 Compose、迁移、HTTPS、Turnstile、安全头；
-- 完成生产备份恢复演练。
+- **已完成**：修复 DEF-019 并完成绕过 UI 的真实协议复测；
+- **已完成**：8 个历史回归和全部 74 个 CORE GATE；
+- **已完成**：只读账务对账、并发、故障回滚、历史日期 Dashboard 和 RabbitMQ 自动
+  恢复门禁；
+- **待外部资料**：VPS 预生产、DNS/HTTPS、真实 Turnstile、安全头和生产备份恢复。
 
 ### 8 月 14 日周五上午
 
@@ -190,11 +190,25 @@ RabbitMQ/Dashboard 丢刷新、迁移失败、备份无法恢复。
 
 ## 6. 当前 Go / No-Go
 
-截至 2026-08-13：**NO-GO（尚未满足公网发布门禁）**。
+截至 2026-08-13：**本地 RC 门禁 GO-ready；公网发布仍为 NO-GO**。
 
-已具备继续 UAT 的本地运行基线，但以下事项仍阻止公网发布：
+本地 UAT、账务、API/Web 自动化、Compose 与 production build 已通过，没有未关闭的
+Beta P0/P1。公网发布仍被以下外部门禁阻止：
 
-- 2026-08-12 人工 UAT 批次已通过，但尚未完成全部逐用例证据映射；
-- 核心 P0/P1 UAT 尚未全部登记为 PASS；
-- DEF-019 已实现自动化门禁，仍需执行绕过 UI 的集成 UAT；
-- VPS、真实 DNS/HTTPS/Turnstile 和生产备份恢复尚未验收。
+- 三仓库 push、草稿 PR、GitHub Actions 和 GHCR digest 尚待完成；
+- VPS、真实 DNS/HTTPS/Turnstile、生产 Secret、安全头和生产备份恢复尚未验收。
+
+候选提交 SHA、PR、CI、镜像标签与 digest 将在发布产物生成后填入本计划，禁止使用
+`latest` 或未记录 digest 的镜像部署。
+
+## 7. 候选产物记录
+
+- UAT 批次：`UAT-20260813-BETA-RC-01`（82/82 PASS）。
+- API 提交：`2a163356eca1b5edb6b66a87a467aadeddf37dcb`。
+- Web 提交：`6862ca2825b0b2da86760ada4a84507f46c47eaf`。
+- API 候选标签：
+  `ghcr.io/gin-melodic/gaap-api:beta-2026-08-14-2a163356eca1b5edb6b66a87a467aadeddf37dcb`。
+- Web 候选标签：
+  `ghcr.io/gin-melodic/gaap-web:beta-2026-08-14-6862ca2825b0b2da86760ada4a84507f46c47eaf`。
+- GHCR digest、三仓库 PR 和 CI：等待远端认证后填写。
+- 预生产 Compose 必须使用发布后的 `image@sha256:...`，不得直接部署上述可变标签。

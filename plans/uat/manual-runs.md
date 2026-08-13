@@ -10,3 +10,11 @@
 - 执行环境：未单独提供；当前计划中的 UAT 基线入口为 `https://gaap.local`。
 - 用例范围与逐项证据：未随确认提供，因此没有把仍标记为 `NOT RUN` 的用例批量改为
   `PASS`。后续补齐映射时，必须在对应模块文档登记执行批次、环境和证据。
+
+## 2026-08-13 — Beta RC 全量 UAT
+
+- 执行批次：`UAT-20260813-BETA-RC-01`。
+- 结果：**82/82 Beta 用例 PASS，0 FAIL，0 NOT RUN**。
+- 方式：真实 Chrome 页面流程、真实 protobuf + ALE HTTPS 协议、原始 ALE 攻击请求、
+  Compose 故障注入和 PostgreSQL 只读对账。
+- 完整证据：[`runs/2026-08-13-beta-rc-01.md`](runs/2026-08-13-beta-rc-01.md)。

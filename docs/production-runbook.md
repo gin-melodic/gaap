@@ -95,5 +95,6 @@ GAAP_PROJECT_DIR=/opt/gaap GAAP_RESTORE_DB=gaap_restore \
   新写入的数据库上直接向下迁移。
 - 发布后至少观察 2 小时：5xx、ALE/HMAC 失败、refresh 循环、Redis 错误、数据库锁
   等待、RabbitMQ 连接/积压，以及账户余额与交易流水对账。
-- RabbitMQ 重启后如果 API ready 返回 503，联动重启 API 以重新建立连接和注册消费者；
-  恢复后确认 `gaap.dashboard` 和 `gaap.tasks` 各有一个消费者。
+- RabbitMQ 重启时 API ready 应暂时返回 503；连接监督器会自动重连并重新注册消费者。
+  恢复后确认 ready 返回 200，且 `gaap.dashboard` 和 `gaap.tasks` 各有一个消费者；超过
+  退避恢复窗口仍未恢复时才按故障处理并保留日志，不把重启 API 当作正常恢复步骤。
