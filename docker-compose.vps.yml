@@ -1,0 +1,11 @@
+services:
+  caddy:
+    profiles: [embedded-caddy]
+
+  gaap-api:
+    ports:
+      - "127.0.0.1:18081:8000"
+
+  gaap-web:
+    ports:
+      - "127.0.0.1:18082:3000"
