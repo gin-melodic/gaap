@@ -195,8 +195,9 @@ RabbitMQ/Dashboard 丢刷新、迁移失败。
   `differences=[]`、`issues=[]`；RabbitMQ 两队列各 1 个消费者、无积压；最终应用日志
   无 ERROR/WARN/PANIC/FATAL 或 5xx；浏览器控制台无 error，新发现的图表尺寸和 Dialog
   可访问性 warning 以及交易时间控件/日期协议不一致已登记为非阻断 DEF-025/026/027；
-- **已完成（逾期收尾）**：截至 2026-08-14 12:15 CST，更新生产证据与最终 GO，
-  提交推送文档并确认根、API、Web 三个工作区干净；
+- **已完成（逾期收尾）**：发布负责人于 2026-08-14 12:15 CST 确认最终 GO；
+  截至 12:22 CST，生产证据已更新，文档已提交并推送，PR 检查通过，根、API、Web
+  三个工作区已确认干净；
 - **已确认**：Caddyfile 权限已由发布负责人恢复，Cloudflare 橙云已开启且公网访问正常；
 - **WAIVED / ACCEPTED RISK**：发布前数据库备份、独立恢复演练和每日备份任务
   不在本轮执行，且不再构成发布阻断。
@@ -215,7 +216,8 @@ RabbitMQ/Dashboard 丢刷新、迁移失败。
 
 ## 6. 当前 Go / No-Go
 
-截至 2026-08-14 12:15 CST：**最终结论为 GO（邀请制 Beta）**。
+发布负责人于 2026-08-14 12:15 CST 确认，并于 12:22 CST 完成文档推送与 PR 检查：
+**最终结论为 GO（邀请制 Beta）**。
 
 本地 RC、VPS 容器、DNS/HTTPS、真实 Turnstile、源站直连、生产业务 smoke、RabbitMQ 复核、
 生产只读对账和最终应用日志扫描均通过。没有未关闭的 Beta P0/P1；DEF-025/026/027
