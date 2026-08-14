@@ -26,7 +26,7 @@
 - 资产、负债、收入、支出账户；
 - 收入、支出、转账及交易更新、删除；
 - 基础 Dashboard 与 30 天余额趋势；
-- live、ready、HTTPS、备份恢复。
+- live、ready 和 HTTPS。
 
 首版延期：
 
@@ -126,11 +126,12 @@ API 启动必须成功连接 PostgreSQL、Redis 和 RabbitMQ 并完成迁移；r
   1 个消费者且无积压；空生产库只读对账通过。
 - **部分完成**：RabbitMQ 重启期间 ready 返回 503 并在 14 秒恢复，Redis 和 API
   重启后分别在 0 秒和 1 秒恢复；重启后只读对账再次通过。
-- **阻断**：Cloudflare 当前 token 无权访问 `gaap.cc` zone；`www.gaap.cc` 为 NXDOMAIN，
-  公网 `gaap.cc` 仍返回旧 JSON 404，因此 HTTPS、安全头、真实 Turnstile 和公网业务
-  smoke 尚不能执行。
-- **DEFERRED / NO-GO**：按发布负责人决定，本轮不执行生产备份、独立恢复演练和每日
-  备份任务；该发布门禁没有被视为 PASS。
+- **已解决**：Cloudflare DNS、橙云、HTTPS 和安全头已恢复；多余的历史 Origin Rule
+  曾将 `gaap.cc` 错误转发至 VPS `8081` 并导致 525，删除后真实 Turnstile 和
+  公网业务 smoke 均已通过。
+- **WAIVED / ACCEPTED RISK**：发布负责人于 2026-08-14 12:15 CST 确认，本轮
+  不需要生产备份、独立恢复演练和每日备份任务；三项从 Beta 发布门禁移除，
+  不写成 PASS。已接受数据库故障时无可验证生产恢复点、不能承诺恢复最新数据的风险。
 
 ## 4. 测试与发布门禁
 
@@ -154,10 +155,10 @@ API 启动必须成功连接 PostgreSQL、Redis 和 RabbitMQ 并完成迁移；r
 - RabbitMQ 两个队列消费者存在，Dashboard 消息无积压；
 - Redis、RabbitMQ、API 重启后的 session、ready 和 Dashboard 行为符合预期；
 - 只读账务对账无差异；
-- HTTPS、Turnstile、备份恢复完成。
+- HTTPS 与 Turnstile 完成。
 
 以下任一失败立即停止发布：账务不一致、越权、ALE 泄密或无法解密、核心 P0/P1、
-RabbitMQ/Dashboard 丢刷新、迁移失败、备份无法恢复。
+RabbitMQ/Dashboard 丢刷新、迁移失败。
 
 ## 5. 修订时间表
 
@@ -180,18 +181,25 @@ RabbitMQ/Dashboard 丢刷新、迁移失败、备份无法恢复。
 - **已完成**：Cloudflare DNS、Caddy HTTPS 与安全头恢复；真实 Turnstile 签发 token，
   `windane@gmail.com` 白名单生产注册通过。执行跨过 2026-08-14 00:00，剩余生产 smoke
   转入 8 月 14 日白天，不回填为 8 月 13 日完成。
-- **主动延期**：生产备份、独立恢复演练和每日备份任务本轮不执行，最终保持 NO-GO。
+- **当时决策**：生产备份、独立恢复演练和每日备份任务本轮不执行，截至当时
+  保持 NO-GO；该决策已于 2026-08-14 12:15 CST 由发布负责人更新为正式豁免。
 
 ### 8 月 14 日周五上午
 
-- **待执行**：开启橙云后的源站直连验证，确认源站证书、Caddy 路由、API ready 和安全
-  响应头均绕过 Cloudflare 正常工作；
-- **待执行**：使用已注册白名单用户完成生产登录、账户、收入/支出/转账、交易更新与
-  删除、Dashboard、refresh 和 logout smoke；
-- **待执行**：真实业务数据只读账务对账、RabbitMQ 消费者/积压复核及最终日志扫描；
-- **待执行**：更新生产证据与 Go / No-Go，提交推送文档并确认三个工作区干净；
+- **已完成**：开启橙云后绕过 Cloudflare 直连 `144.34.237.205`，请求直达源站、
+  TLS 证书、HTTP→HTTPS、Web/Caddy 路由、API ready 和安全响应头全部通过；
+- **已完成**：Cloudflare 历史 Origin Rule 曾将 `gaap.cc` 错误转发至 VPS `8081`
+  并触发 525；该规则已删除，公网登录页恢复后，生产重新注册、登录、四类账户、
+  收入/支出/转账、交易更新与删除、Dashboard、refresh 和 logout smoke 全部通过；
+- **已完成**：生产只读账务对账检查 6 个账户、4 笔交易，`passed=true`、
+  `differences=[]`、`issues=[]`；RabbitMQ 两队列各 1 个消费者、无积压；最终应用日志
+  无 ERROR/WARN/PANIC/FATAL 或 5xx；浏览器控制台无 error，新发现的图表尺寸和 Dialog
+  可访问性 warning 以及交易时间控件/日期协议不一致已登记为非阻断 DEF-025/026/027；
+- **已完成（逾期收尾）**：截至 2026-08-14 12:15 CST，更新生产证据与最终 GO，
+  提交推送文档并确认根、API、Web 三个工作区干净；
 - **已确认**：Caddyfile 权限已由发布负责人恢复，Cloudflare 橙云已开启且公网访问正常；
-- **DEFERRED**：发布前数据库备份、独立恢复演练和每日备份任务不在本轮执行。
+- **WAIVED / ACCEPTED RISK**：发布前数据库备份、独立恢复演练和每日备份任务
+  不在本轮执行，且不再构成发布阻断。
 
 ### 8 月 14 日周五下午
 
@@ -202,22 +210,20 @@ RabbitMQ/Dashboard 丢刷新、迁移失败、备份无法恢复。
 - 至少观察 2 小时：5xx、ALE、refresh 循环、RabbitMQ 连接与积压、数据库锁等待和
   账务对账。
 
-应用故障回滚上一不可变镜像；数据库故障先停止写流量并保留现场，再依据发布前加密
-备份恢复。禁止在已有新写入的数据库上盲目执行向下迁移。
+应用故障回滚上一不可变镜像；数据库故障先停止写流量并保留现场。由于本轮已豁免
+生产备份/恢复门禁，不承诺存在可用恢复点；禁止在已有新写入的数据库上盲目执行向下迁移。
 
 ## 6. 当前 Go / No-Go
 
-截至 2026-08-14 00:00 后：**本地 RC、VPS 容器、DNS/HTTPS、真实 Turnstile 注册通过；
-生产业务 smoke 尚未收口，公网发布仍为 NO-GO**。
+截至 2026-08-14 12:15 CST：**最终结论为 GO（邀请制 Beta）**。
 
-本地 UAT、账务、API/Web 自动化、Compose 与 production build 已通过，没有未关闭的
-Beta P0/P1。API/Web PR CI 已通过，候选镜像已发布并以 digest 部署。公网发布仍被以下
-门禁阻止：
+本地 RC、VPS 容器、DNS/HTTPS、真实 Turnstile、源站直连、生产业务 smoke、RabbitMQ 复核、
+生产只读对账和最终应用日志扫描均通过。没有未关闭的 Beta P0/P1；DEF-025/026/027
+为已记录的非阻断 P2。
 
-- 橙云开启后的源站绕过验证尚未正式登记；
-- 生产登录、账户、交易、Dashboard、refresh、logout 及真实数据最终对账未执行；
-- 发布负责人决定本轮不做生产备份、独立恢复演练和每日备份任务，该阻断保持
-  DEFERRED，不降级为 PASS。
+发布负责人明确将生产备份、独立恢复演练和每日备份从本轮 Beta 门禁移除，
+记为 **WAIVED / ACCEPTED RISK** 而非 PASS。此豁免不改变技术结果，但意味着数据库故障时
+无可验证生产恢复点，可能无法恢复最新业务数据。发布后继续执行至少 2 小时观察。
 
 ## 7. 候选产物记录
 

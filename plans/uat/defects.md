@@ -28,10 +28,14 @@
 | DEF-022 | P0 | 金额/数据库 | API 允许的金额上界超过 `NUMERIC(20,9)`，大额账户和交易在 PostgreSQL 溢出 | RESOLVED / UAT PASS | TC-EDGE-ACCT-001、TC-TXN-CREATE-010 | `2a163356` |
 | DEF-023 | P1 | 输入边界 | 超长账户名称和交易备注落到数据库错误并触发不必要的 session 重同步 | RESOLVED / UAT PASS | TC-EDGE-ACCT-002、TC-EDGE-TXN-003 | `2a163356` |
 | DEF-024 | P1 | Dashboard/币种 | profile 加载前 Dashboard 以 USD 格式化 CNY 余额并抛出币种不匹配 | RESOLVED / BROWSER UAT PASS | TC-DASH-SUMMARY-001、TC-DASH-TREND-001 | `4937d1db` |
+| DEF-025 | P2 | Dashboard/图表 | 生产 Dashboard 初始化和 reload 时，图表容器短暂产生 `width(-1)` / `height(-1)` 控制台警告；图表随后正常显示 | OPEN / NON-BLOCKING | 2026-08-14 生产 Dashboard smoke | 待修复 |
+| DEF-026 | P2 | UI/可访问性 | 新增账户、新增/编辑/删除交易 Dialog 缺少 `Description` 或 `aria-describedby`，浏览器控制台持续警告 | OPEN / NON-BLOCKING | 2026-08-14 生产账户/交易 smoke | 待修复 |
+| DEF-027 | P2 | 交易/日期 | 新增交易 UI 标注 `Transaction Time` 并接受 `datetime-local`，但 API 只返回 `YYYY-MM-DD`；前端将该日期按 UTC 零点解析，在上海时区列表/编辑表单统一回显 08:00，用户输入的时分秒丢失 | OPEN / NON-BLOCKING FOR DATE-BASED BETA | 2026-08-14 生产交易 smoke | 待明确仅日期或端到端保留时间 |
 
 `IMPLEMENTED` 只表示代码整改已完成，不等同于 UAT `PASS`。2026-08-13 批次
 `UAT-20260813-BETA-RC-01` 已完成协议、浏览器、ALE 攻击、依赖恢复和只读对账，Beta
 范围缺陷均完成复测；最终对账检查 142 个账户、62 笔交易且无差异或完整性异常。
-VPS 容器、迁移、消费者、重启恢复和空库对账已通过。Cloudflare token 无权访问
-`gaap.cc` zone，且 `www` 为 NXDOMAIN，故公网 DNS、HTTPS、真实 Turnstile 和业务 smoke
-仍被阻断；生产备份恢复按发布负责人决定保持 DEFERRED / NO-GO。
+VPS 容器、迁移、消费者、重启恢复和空库对账已通过。Cloudflare DNS/HTTPS、
+真实 Turnstile、源站直连和生产业务 smoke 已于 2026-08-14 通过；本次新增三个
+非阻断 P2 前端问题。发布负责人于 2026-08-14 12:15 CST 将生产备份、独立恢复演练和
+每日备份记为 WAIVED / ACCEPTED RISK，最终结论更新为 GO（邀请制 Beta）。
