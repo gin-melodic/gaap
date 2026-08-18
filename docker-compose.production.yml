@@ -2,6 +2,7 @@ name: gaap-production
 
 services:
   caddy:
+    profiles: [embedded-caddy]
     image: caddy:2.10-alpine
     restart: unless-stopped
     ports:
@@ -34,6 +35,8 @@ services:
       REDIS_PORT: "6379"
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: "5672"
+    ports:
+      - "127.0.0.1:18081:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,6 +69,8 @@ services:
       HOSTNAME: 0.0.0.0
       PORT: "3000"
       NEXT_PUBLIC_API_URL: /api
+    ports:
+      - "127.0.0.1:18082:3000"
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:3000/login"]
       interval: 15s
