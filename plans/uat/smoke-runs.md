@@ -115,3 +115,22 @@
 - 已接受风险：数据库故障时无可验证生产恢复点，不承诺可恢复最新业务数据；
   应用镜像仍可回滚，数据库故障必须先停写并保留现场。
 - 发布后义务：至少观察 2 小时，持续监控 5xx、ALE/refresh、RabbitMQ、数据库锁等待和账务对账。
+
+## 2026-08-14 — 发布后两小时观察收口
+
+- 观察窗口：2026-08-14 12:15–14:20 CST；13:20 和 14:20 执行完整检查，窗口内持续检查
+  公网 ready。
+- 结果：**PASS**。公网 live 和 ready 在最终检查均返回 HTTP 200，分别为
+  `{"status":"alive"}` 和 `{"status":"ready"}`。
+- 容器：GAAP API、Web、PostgreSQL、Redis 和 RabbitMQ 5 个生产容器均持续运行且
+  `healthy`；公网入口同时证明主机 Caddy、Cloudflare 和应用路由可用。
+- RabbitMQ：`gaap.tasks` 与 `gaap.dashboard` 均为 1 个消费者，
+  `messages_ready=0`、`messages_unacknowledged=0`。
+- PostgreSQL：锁等待为 0，运行超过 5 分钟的事务为 0。
+- 日志：从 12:15 CST 起，生产 API、Web、PostgreSQL、Redis 和 RabbitMQ 日志中
+  ERROR/WARN/PANIC/FATAL、HTTP 5xx、ALE/HMAC/nonce/decrypt 失败、refresh 异常和
+  Redis 失败模式计数均为 0。
+- 强制只读对账：`passed=true`，`accountsChecked=6`，`transactionsChecked=4`，
+  `differences=[]`，`issues=[]`。对账器启动时报告容器内 `/app/.env` 不存在的既知警告，
+  生产配置由 Compose 注入且对账成功，该警告未进入运行中服务日志。
+- 结论：发布后两小时观察义务完成；未触发应用回滚或数据库停写条件。
