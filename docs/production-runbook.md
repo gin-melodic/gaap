@@ -28,6 +28,19 @@ chmod 600 /opt/gaap/secrets/backup.key
 `NEXT_PUBLIC_ALE_BOOTSTRAP_KEY` 必须完全相同；它是浏览器公开配置，不能替代 JWT、
 数据库、Redis 或 Turnstile Secret。
 
+## 部署形态
+
+VPS 上 Caddy 以宿主机原生进程运行（配置文件 `/opt/gaap/Caddyfile.gaap`），
+不在 Compose 栈内；`docker-compose.production.yml` 中的 `caddy` 服务带
+`embedded-caddy` profile，默认不启动，需要容器化 Caddy 时显式加
+`--profile embedded-caddy`。API 与 Web 仅发布到本机
+（`127.0.0.1:18081` / `127.0.0.1:18082`）供宿主机 Caddy 反代，公网只暴露
+Caddy 的 80/443。
+
+`docker-compose.production.yml` 是该部署的唯一 Compose 文件（原
+`docker-compose.vps.yml` overlay 已于 2026-08-18 合并入内），所有 compose
+命令只需 `-f docker-compose.production.yml`，不再需要第二个 `-f`。
+
 ## 构建不可变镜像
 
 使用发布号或 Git SHA，不使用 `latest`：
