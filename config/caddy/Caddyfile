@@ -38,12 +38,12 @@
 
     # ==============================================================================
     # Backend API Routes (GoFrame)
-    # All /api/* requests go to gaap-api:8000
+    # All /api/* requests go to host.docker.internal:8000
     # ==============================================================================
     handle_path /api/* {
-        reverse_proxy gaap-api:8000 {
+        reverse_proxy host.docker.internal:8000 {
             # Health check
-            health_uri /health
+            health_uri /v1/health
             health_interval 10s
             health_timeout 5s
             
@@ -66,10 +66,10 @@
 
     # ==============================================================================
     # Frontend (Next.js)
-    # All other requests go to gaap-web:3000
+    # All other requests go to host.docker.internal:3000
     # ==============================================================================
     handle {
-        reverse_proxy gaap-web:3000 {
+        reverse_proxy host.docker.internal:3000 {
             # Next.js hot-reload support
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}

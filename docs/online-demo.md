@@ -1,0 +1,35 @@
+# Online demo info
+
+## Demo user
+
+The backend can maintain realistic transaction history for the configured online demo user. It
+identifies the user by the unique `ONLINE_DEMO_USER_EMAIL` value and never creates or modifies the
+user's account structure.
+
+### Automatic transaction generation
+
+The generator is disabled by default. Enable it only in the environment that owns the public demo
+user:
+
+```dotenv
+DEMO_DATA_GENERATOR_ENABLED=true
+ONLINE_DEMO_USER_EMAIL=demo@example.com
+DEMO_DATA_START_DATE=2026-04-02
+DEMO_DATA_TIMEZONE=America/Los_Angeles
+```
+
+`ONLINE_DEMO_USER_EMAIL` should use the environment's real demo address; the value above is only an
+example. The start date and timezone are optional and default to the values shown.
+
+When enabled, the API starts serving normally and runs catch-up in the background. It processes each
+unfinished business date from the start date through yesterday, then wakes at midnight in the
+configured timezone. The initial rollout has a minimum backfill endpoint of `2026-08-23`, including
+when Los Angeles has not yet crossed into August 24. Failed catch-up attempts retry after 15 minutes.
+Each day is committed as one database transaction and is protected by a unique completion record, so
+restarts and multiple API instances do not duplicate data. A successfully processed day may contain
+zero transactions.
+
+Generated transactions use only the demo user's active, non-group accounts in the base currency.
+Amounts use cents, and asset or liability balances are never allowed to become negative. Disable the
+job by removing the variable or setting `DEMO_DATA_GENERATOR_ENABLED=false`; existing generated data
+is retained.

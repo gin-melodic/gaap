@@ -1,0 +1,34 @@
+# Third-party dependencies
+gaap-api/vendor/
+gaap-web/node_modules/
+
+# Build outputs
+gaap-api/main
+gaap-api/main.exe
+gaap-api/bin/
+gaap-api/output/
+gaap-web/.next/
+gaap-web/out/
+gaap-web/build/
+
+# Temporary files
+gaap-api/temp/
+gaap-api/temp.yaml
+**/*.tmp
+**/*.log
+logs/
+
+# Packed resources
+gaap-api/internal/packed/
+
+# Data volumes
+volumes/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+*.crt

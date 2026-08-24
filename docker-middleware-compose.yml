@@ -20,9 +20,6 @@ services:
       - ./volumes/uploads:/var/www/uploads
     environment:
       - DEV_DOMAIN=${DEV_DOMAIN:-gaap.local}
-    depends_on:
-      - gaap-api
-      - gaap-web
     networks:
       - gaap-network
     healthcheck:
@@ -30,78 +27,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      
-  # ==================== Backend: GoFrame API ====================
-  gaap-api:
-    build:
-      context: ./gaap-api
-      dockerfile: Dockerfile.dev
-      target: development
-    container_name: gaap-api-dev
-    restart: unless-stopped
-    expose:
-      - "8000"  # Only expose to internal network
-    ports:
-      - "${DELVE_PORT:-40000}:40000"  # Delve debugger
-    volumes:
-      - ./gaap-api:/app
-      - go-mod-cache:/go/pkg/mod
-    environment:
-      - GF_ENV=${GF_ENV}
-      - GF_DEBUG=${GF_DEBUG}
-      - GF_LOG_LEVEL=${GF_LOG_LEVEL}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_INTERNAL_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_INTERNAL_PORT}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - RABBITMQ_PORT=${RABBITMQ_INTERNAL_PORT}
-      - RABBITMQ_USER=${RABBITMQ_USER}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-      - ENABLE_DELVE=${ENABLE_DELVE}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - gaap-network
-    cap_add:
-      - SYS_PTRACE
-    security_opt:
-      - seccomp:unconfined
-      - apparmor:unconfined
-
-  # ==================== Frontend: Next.js Web ====================
-  gaap-web:
-    build:
-      context: ./gaap-web
-      dockerfile: Dockerfile.dev
-      target: development
-    container_name: gaap-web-dev
-    restart: unless-stopped
-    expose:
-      - "3000"  # Only expose to internal network
-    volumes:
-      - ./gaap-web:/app
-      - /app/node_modules
-      - /app/.next
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      # Allow Next.js to accept requests from Caddy
-      - HOSTNAME=0.0.0.0
-    depends_on:
-      - gaap-api
-    networks:
-      - gaap-network
 
   # ==================== PostgreSQL Database ====================
   postgres:
@@ -164,9 +89,6 @@ services:
       retries: 5
     networks:
       - gaap-network
-
-volumes:
-  go-mod-cache:
 
 networks:
   gaap-network:
