@@ -65,7 +65,7 @@ the connection supervisor reconnects automatically via backoff — the 2026-08-1
 - **Done**: the 2026-08-12 manual UAT batch passed; its scope is recorded in
   `plans/uat/manual-runs.md`.
 - **Done**: full UAT results mapped onto the 82 Beta cases, with evidence in
-  `plans/uat/runs/2026-08-13-beta-rc-01.md`.
+  `runs/2026-08-13-beta-rc-01.md` (this archived folder).
 - **Gate**: core cases must not remain NOT RUN; DEFERRED entries must not be written as PASS.
 
 ### ALE + Protobuf
@@ -208,4 +208,4 @@ The release owner explicitly removed production backups, an independent restore 
 - API/Web/root CI: PASS.
 - GitHub Actions secrets include `BETA_ALE_BOOTSTRAP_KEY` and `BETA_TURNSTILE_SITE_KEY`; secret values are not recorded in the evidence files.
 - VPS Compose uses the above `image@sha256:...` references; no `latest` was deployed — execution evidence is in
-  [`UAT-20260813-VPS-RC-01`](uat/runs/2026-08-13-vps-rc-01.md).
+[`UAT-20260813-VPS-RC-01`](runs/2026-08-13-vps-rc-01.md).

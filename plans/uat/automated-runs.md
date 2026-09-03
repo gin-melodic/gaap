@@ -20,5 +20,5 @@
 - API: 152 Go tests passed; `go build ./...` passed.
 - Web: 74 standard Vitest tests passed; ESLint, TypeScript and the production Next.js build all passed;
   `npm audit --audit-level=low` reported 0 issues.
-- Full execution context plus browser/fault-recovery evidence is in
-  [`runs/2026-08-13-beta-rc-01.md`](runs/2026-08-13-beta-rc-01.md).
+- Full execution context plus browser/fault-recovery evidence is in the archived batch record at
+  [`runs/2026-08-13-beta-rc-01.md`](../archive/beta-2026-08-14/runs/2026-08-13-beta-rc-01.md).

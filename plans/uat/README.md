@@ -1,6 +1,6 @@
 # GAAP Beta UAT
 
-Main release plan: [GAAP Invite-Only Beta Release Plan](../release-beta-2026-08-14.md).
+Main release plan (Beta round, archived): [GAAP Invite-Only Beta Release Plan](../archive/beta-2026-08-14/release-beta-2026-08-14.md).
 
 The Excel workbook is deprecated. This directory is the single source of truth for UAT status.
 
@@ -18,7 +18,7 @@ The Excel workbook is deprecated. This directory is the single source of truth f
 - The fund-flow test sheet was originally blank; no cases were generated from it.
 
 Full-protocol, browser, fault-recovery and reconciliation evidence from 2026-08-13 is in
-[`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md). The six Beta module files were re-counted to
+[`UAT-20260813-BETA-RC-01`](../archive/beta-2026-08-14/runs/2026-08-13-beta-rc-01.md). The six Beta module files were re-counted to
 82 items; the earlier 80/67 counting basis had missed two token security cases, and no omissions in the original workbook were found.
 
 ## Status Rules
@@ -45,4 +45,4 @@ Beta UAT, and to avoid maintaining the same case in multiple files.
 - [Automated Smoke Records](smoke-runs.md)
 - [Automation & Reconciliation Run Records](automated-runs.md)
 - [Manual UAT Batch Records](manual-runs.md)
-- [2026-08-13 Beta RC Full-Closure Evidence](runs/2026-08-13-beta-rc-01.md)
+- [Archived: 2026-08-13 Beta RC Full-Closure Evidence](../archive/beta-2026-08-14/runs/2026-08-13-beta-rc-01.md)

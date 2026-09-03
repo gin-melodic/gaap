@@ -55,4 +55,4 @@ docker compose --env-file .env.uat -f docker-compose.uat.yml down -v
 - Do not mark manual UAT cases as `PASS` just because automated tests or smoke checks passed.
 
 The 2026-08-13 batch `UAT-20260813-BETA-RC-01` completed 82/82 Beta cases using a real browser and the real protobuf + ALE
-HTTPS chain; see `plans/uat/runs/2026-08-13-beta-rc-01.md` for execution evidence. The 38 DEFERRED cases remain NOT RUN.
+HTTPS chain; see `plans/archive/beta-2026-08-14/runs/2026-08-13-beta-rc-01.md` (archived) for execution evidence. The 38 DEFERRED cases remain NOT RUN.
