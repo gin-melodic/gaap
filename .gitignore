@@ -1,5 +1,7 @@
 # Environment variables
 .env
+.env.production
+.env.uat
 .env.local
 .env.*.local
 
@@ -15,6 +17,7 @@ docker-compose.override.yml
 *.swp
 *.swo
 *~
+~$*.xlsx
 
 # OS
 .DS_Store

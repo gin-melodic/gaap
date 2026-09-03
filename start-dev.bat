@@ -135,7 +135,7 @@ powershell -Command "(Get-Content .env) -replace 'POSTGRES_HOST=postgres', 'POST
 call :print_info "Installing Go dependencies..."
 go mod download
 call :print_info "Starting API server with hot-reload..."
-start "GAAP API" pwsh -NoExit -Command "cd '%SCRIPT_DIR%\gaap-api'; air" 2>nul || start "GAAP API" powershell -NoExit -Command "cd '%SCRIPT_DIR%\gaap-api'; air"
+start "GAAP API" pwsh -NoExit -Command "cd '%SCRIPT_DIR%\gaap-api'; air -c .air.windows.toml" 2>nul || start "GAAP API" powershell -NoExit -Command "cd '%SCRIPT_DIR%\gaap-api'; air -c .air.windows.toml"
 cd /d "%SCRIPT_DIR%"
 call :print_success "GAAP API started on http://localhost:8000"
 call :print_info "Press Ctrl+C in the API window to stop"

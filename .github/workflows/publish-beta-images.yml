@@ -1,0 +1,62 @@
+name: Publish Beta Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_sha:
+        description: Exact gaap-api commit SHA
+        required: true
+        type: string
+      web_sha:
+        description: Exact gaap-web commit SHA
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Verify requested submodule commits
+        env:
+          API_SHA: ${{ inputs.api_sha }}
+          WEB_SHA: ${{ inputs.web_sha }}
+        run: |
+          test "$(git -C gaap-api rev-parse HEAD)" = "$API_SHA"
+          test "$(git -C gaap-web rev-parse HEAD)" = "$WEB_SHA"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish API
+        uses: docker/build-push-action@v6
+        with:
+          context: gaap-api
+          target: production
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/gin-melodic/gaap-api:beta-2026-08-14-${{ inputs.api_sha }}
+
+      - name: Build and publish Web
+        uses: docker/build-push-action@v6
+        with:
+          context: gaap-web
+          target: production
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/gin-melodic/gaap-web:beta-2026-08-14-${{ inputs.web_sha }}
+          build-args: |
+            NEXT_PUBLIC_ALE_BOOTSTRAP_KEY=${{ secrets.BETA_ALE_BOOTSTRAP_KEY }}
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.BETA_TURNSTILE_SITE_KEY }}
