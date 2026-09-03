@@ -1,49 +1,48 @@
 # GAAP Beta UAT
 
-主上线计划：[GAAP 邀请制 Beta 上线计划](../release-beta-2026-08-14.md)。
+Main release plan: [GAAP Invite-Only Beta Release Plan](../release-beta-2026-08-14.md).
 
-Excel 工作簿已弃用。本目录是唯一 UAT 状态来源。
+The Excel workbook is deprecated. This directory is the single source of truth for UAT status.
 
-## 当前基线
+## Current Baseline
 
-- 2026-08-12 人工 UAT 批次：**PASS**（用户于 2026-08-13 确认）。由于未提供逐用例
-  清单与证据，本次确认暂不批量覆盖下列逐用例统计，详见 `manual-runs.md`。
+- 2026-08-12 manual UAT batch: **PASS** (confirmed by the user on 2026-08-13). Because no per-case checklist or evidence was provided, this confirmation does not bulk-overwrite the per-case statistics below yet; see `manual-runs.md` for details.
 
-- 总用例：120
-- 已通过：82
-- 执行失败：0
-- 未执行：38（全部为 DEFERRED）
-- 本次 Beta 用例总数：82（8 个 CORE REGRESSION + 74 个 CORE GATE）
-- 本次 Beta 待执行核心门禁：0
-- 非 Beta 延期用例：38，已统一移至 `deferred.md`
-- 资金流水测试 sheet 原为空白，未生成用例。
+- Total cases: 120
+- Passed: 82
+- Failed runs: 0
+- Not run: 38 (all DEFERRED)
+- Beta case count for this round: 82 (8 CORE REGRESSION + 74 CORE GATE)
+- Core gates still pending execution for this Beta: 0
+- Non-Beta deferred cases: 38, consolidated into `deferred.md`
+- The fund-flow test sheet was originally blank; no cases were generated from it.
 
-2026-08-13 的全量协议、浏览器、故障恢复与对账证据见
-[`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md)。六个 Beta 模块文件复核为
-82 项；先前 80/67 的统计口径漏计了两个 token 安全用例，未发现原工作簿遗漏。
+Full-protocol, browser, fault-recovery and reconciliation evidence from 2026-08-13 is in
+[`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md). The six Beta module files were re-counted to
+82 items; the earlier 80/67 counting basis had missed two token security cases, and no omissions in the original workbook were found.
 
-## 状态规则
+## Status Rules
 
-- `PASS`：原 UAT 已实际执行并通过，必须持续回归。
-- `FAIL`：已实际执行且结果不符合预期，必须修复并重新执行。
-- `NOT RUN`：尚未执行，不能解释为通过或失败。
-- `CORE GATE`：本次 Beta 发布前必须执行并通过。
-- `DEFERRED`：功能不进入本次 Beta，保持 NOT RUN。
+- `PASS`: the case was actually executed under UAT and passed; it must continue to be regressed.
+- `FAIL`: actually executed with an unexpected result; it must be fixed and re-run.
+- `NOT RUN`: not yet executed; it cannot be interpreted as either pass or fail.
+- `CORE GATE`: must be executed and passed before this Beta release.
+- `DEFERRED`: the feature is not part of this Beta; keep NOT RUN.
 
-模块文档只保存本次 Beta 用例。所有 DEFERRED 用例只在 `deferred.md` 保存，避免执行
-Beta UAT 时误选，也避免同一个用例在多个文件重复维护。
+Module documents only store cases for this Beta round. All DEFERRED cases live exclusively in `deferred.md` to avoid them being accidentally selected while running
+Beta UAT, and to avoid maintaining the same case in multiple files.
 
-## 文件
+## Files
 
-- [认证](authentication.md)
-- [账户](accounts.md)
-- [交易](transactions.md)
-- [Dashboard、配置与用户](dashboard-and-user.md)
-- [健康检查](data-tasks-health.md)
-- [安全、完整性与并发](security-integrity-concurrency.md)
-- [非 Beta 延期测试用例](deferred.md)
-- [缺陷清单](defects.md)
-- [自动化 Smoke 记录](smoke-runs.md)
-- [自动化与对账执行记录](automated-runs.md)
-- [人工 UAT 批次记录](manual-runs.md)
-- [2026-08-13 Beta RC 全量收口证据](runs/2026-08-13-beta-rc-01.md)
+- [Authentication](authentication.md)
+- [Accounts](accounts.md)
+- [Transactions](transactions.md)
+- [Dashboard, Settings & User](dashboard-and-user.md)
+- [Health Checks](data-tasks-health.md)
+- [Security, Integrity & Concurrency](security-integrity-concurrency.md)
+- [Non-Beta Deferred Test Cases](deferred.md)
+- [Defect List](defects.md)
+- [Automated Smoke Records](smoke-runs.md)
+- [Automation & Reconciliation Run Records](automated-runs.md)
+- [Manual UAT Batch Records](manual-runs.md)
+- [2026-08-13 Beta RC Full-Closure Evidence](runs/2026-08-13-beta-rc-01.md)

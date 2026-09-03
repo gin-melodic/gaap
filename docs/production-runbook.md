@@ -1,20 +1,20 @@
-# GAAP 邀请制 Beta 生产运行手册
+# GAAP Invite-Only Beta Production Runbook
 
-主上线计划：`plans/release-beta-2026-08-14.md`。
+Main release plan: `plans/release-beta-2026-08-14.md`.
 
-## 发布前提
+## Release Prerequisites
 
-- Ubuntu VPS 已安装 Docker Engine 与 Compose Plugin。
-- `gaap.cc` 和 `www.gaap.cc` 已解析到 VPS；80/443 已放行。
-- Cloudflare Turnstile 已添加 `gaap.cc`，Site Key 与 Secret 成对。
-- 本次发布使用全新 PostgreSQL 数据库，不导入 UAT 数据。
-- RabbitMQ 是 Dashboard 刷新链路的核心依赖，不因任务中心延期而移出生产栈。
-- 认证已改为 ALE 内传输原始密码并由服务端 bcrypt；旧的浏览器 SHA-256 密码记录不兼容，预生产测试账号必须重建。
-- `plans/uat/` 中 8 个历史 PASS 已回归，本版全部 CORE GATE 已执行并通过。
+- An Ubuntu VPS with Docker Engine and the Compose Plugin installed.
+- `gaap.cc` and `www.gaap.cc` both resolve to the VPS; ports 80/443 are open.
+- Cloudflare Turnstile is configured for `gaap.cc`, with Site Key and Secret as a pair.
+- This release uses a brand-new PostgreSQL database; no UAT data is imported.
+- RabbitMQ is a core dependency of the Dashboard refresh chain and must not be removed from the production stack just because the task center is deferred.
+- Authentication now transmits the raw password inside ALE and hashes it server-side with bcrypt; legacy browser SHA-256 password records are incompatible, so pre-production test accounts must be recreated.
+- The 8 historical PASS entries in `plans/uat/` have been regressed, and every CORE GATE case for this version has been executed and passed.
 
-## 生产配置
+## Production Configuration
 
-在服务器 `/opt/gaap` 下复制示例文件，并限制权限：
+Copy the example file under `/opt/gaap` on the server and restrict permissions:
 
 ```sh
 cp .env.production.example .env.production
@@ -24,13 +24,13 @@ openssl rand -base64 48 > /opt/gaap/secrets/backup.key
 chmod 600 /opt/gaap/secrets/backup.key
 ```
 
-必须替换所有示例值。`ALE_BOOTSTRAP_KEY` 与构建 Web 镜像时传入的
-`NEXT_PUBLIC_ALE_BOOTSTRAP_KEY` 必须完全相同；它是浏览器公开配置，不能替代 JWT、
-数据库、Redis 或 Turnstile Secret。
+All example values must be replaced. `ALE_BOOTSTRAP_KEY` must exactly match the value
+passed as `NEXT_PUBLIC_ALE_BOOTSTRAP_KEY` when building the Web image; it is a public browser
+setting and cannot replace the JWT, database, Redis or Turnstile Secret.
 
-## 构建不可变镜像
+## Building Immutable Images
 
-使用发布号或 Git SHA，不使用 `latest`：
+Use release numbers or Git SHAs; never use `latest`:
 
 ```sh
 docker build --target production \
@@ -42,10 +42,10 @@ docker build --target production \
   -t ghcr.io/your-org/gaap-web:2026-08-14.1 ./gaap-web
 ```
 
-推送镜像后，将相同不可变标签写入 `.env.production` 的 `GAAP_API_IMAGE` 和
-`GAAP_WEB_IMAGE`。
+After pushing the images, write the same immutable tags into `GAAP_API_IMAGE` and
+`GAAP_WEB_IMAGE` in `.env.production`.
 
-## 部署与验证
+## Deployment & Verification
 
 ```sh
 docker compose --env-file .env.production -f docker-compose.production.yml config
@@ -56,45 +56,44 @@ curl --fail https://gaap.cc/api/v1/health/live
 curl --fail https://gaap.cc/api/v1/health/ready
 ```
 
-随后按 `plans/uat/` 执行公网白名单注册、登录、账户、收入/支出/转账、交易更新与
-删除、余额核对、刷新轮换、退出、容器重启恢复和 HTTPS 安全头 smoke test。
+Then follow `plans/uat/` to run the public smoke test: whitelisted registration, login, accounts,
+income/expense/transfer, transaction update and delete, balance reconciliation, refresh rotation, logout, container restart recovery and HTTPS security headers.
 
-在开放白名单前执行只读账务对账；`passed` 必须为 `true`，`differences` 和 `issues`
-必须为空：
+Run a read-only ledger reconciliation before opening the whitelist; `passed` must be `true`, and both `differences` and `issues`
+must be empty:
 
 ```sh
 docker compose --env-file .env.production -f docker-compose.production.yml \
   run --rm --no-deps gaap-api ./reconcile
 ```
 
-命令会在读取前启用 PostgreSQL `REPEATABLE READ, READ ONLY`。退出码 `2` 表示发现
-账务差异或完整性异常，此时禁止发布并保留数据库现场，不要手工改余额。
+The command enables PostgreSQL `REPEATABLE READ, READ ONLY` before reading. Exit code `2` means a
+ledger discrepancy or integrity anomaly was found; the release must be blocked and the database preserved as-is — do not manually edit balances.
 
-## 备份与恢复
+## Backup & Restore
 
-每日运行：
+Run daily:
 
 ```sh
 GAAP_PROJECT_DIR=/opt/gaap /opt/gaap/scripts/production/backup-postgres.sh
 ```
 
-恢复演练必须写入独立空数据库：
+The restore drill must write into a separate, empty database:
 
 ```sh
 GAAP_PROJECT_DIR=/opt/gaap GAAP_RESTORE_DB=gaap_restore \
   /opt/gaap/scripts/production/restore-postgres.sh /absolute/path/to/backup.sql.gz.enc
 ```
 
-备份脚本使用 AES-256-CBC + PBKDF2 加密并保留至少 7 天。恢复真实生产库前必须先
-停止写流量并保留当前数据库备份。
+The backup script uses AES-256-CBC + PBKDF2 encryption and retains backups for at least 7 days. Before restoring the real production database, you must first
+stop write traffic and keep a current snapshot of the database.
 
-## 回滚
+## Rollback
 
-- 应用故障：将 `.env.production` 的镜像标签改回上一发布并重新 `up -d`。
-- 账务或迁移故障：停止写流量，保留故障现场，使用发布前加密备份恢复；不要在有
-  新写入的数据库上直接向下迁移。
-- 发布后至少观察 2 小时：5xx、ALE/HMAC 失败、refresh 循环、Redis 错误、数据库锁
-  等待、RabbitMQ 连接/积压，以及账户余额与交易流水对账。
-- RabbitMQ 重启时 API ready 应暂时返回 503；连接监督器会自动重连并重新注册消费者。
-  恢复后确认 ready 返回 200，且 `gaap.dashboard` 和 `gaap.tasks` 各有一个消费者；超过
-  退避恢复窗口仍未恢复时才按故障处理并保留日志，不把重启 API 当作正常恢复步骤。
+- Application failure: revert the image tag in `.env.production` to the previous release and run `up -d` again.
+- Ledger or migration failure: stop write traffic, preserve the incident state, and restore from the encrypted pre-release backup; do not run a downward migration directly on a database that already has
+  new writes.
+- Observe for at least 2 hours after release: 5xx errors, ALE/HMAC failures, refresh loops, Redis errors, database lock waits,
+  RabbitMQ connections/backlog, plus reconciliation between account balances and transaction history.
+- While RabbitMQ restarts, the API ready endpoint should temporarily return 503; the connection supervisor automatically reconnects and re-registers consumers. After recovery, confirm that ready returns 200 and that `gaap.dashboard` and `gaap.tasks` each have one consumer; only if it has not recovered beyond the
+  backoff window should you treat it as a failure — keep the logs in that case, and do not restart the API as a normal recovery step.

@@ -1,79 +1,79 @@
-# 健康检查 UAT
+# Health Checks UAT
 
-> 本文件只保留本次 Beta 范围内的用例；非 Beta 用例统一存放于 `deferred.md`。PASS 仅代表原 UAT 已通过，NOT RUN 表示尚未执行。
+> This file only keeps cases within this Beta's scope; non-Beta cases live in `deferred.md`. PASS means the case already passed under UAT, and NOT RUN means it has not been executed yet.
 
-2026-08-13 全量复测批次：[`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md)。
+2026-08-13 full retest batch: [`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md).
 
-## TC-HEALTH-001 — 系统健康检查
+## TC-HEALTH-001 — System Health Check
 
-- 模块：健康检查模块 / 系统健康检查
-- 优先级：P0
-- 执行状态：**PASS**
-- 执行批次：2026-08-12 自动化 UAT；同日修复复测通过
-- 执行环境：本地 production-mode UAT Docker 栈
-- Beta 处置：**CORE GATE**
-- 前置条件：系统正常运行
-- 测试数据：无
-- 预期结果：1. live 返回状态码200
-2. ready 在 PostgreSQL、Redis、RabbitMQ 和迁移均正常时返回状态码200
-3. 任一核心依赖不可用时 ready 返回状态码503
+- Module: Health Checks module / System health check
+- Priority: P0
+- Execution status: **PASS**
+- Execution batch: 2026-08-12 automated UAT; fix retest passed the same day
+- Execution environment: local production-mode UAT Docker stack
+- Beta disposition: **CORE GATE**
+- Preconditions: system running normally
+- Test data: none
+- Expected result: 1. live returns status code 200
+  2. ready returns status code 200 when PostgreSQL, Redis, RabbitMQ and migrations are all healthy
+  3. ready returns status code 503 when any core dependency is unavailable
 
-### 步骤
+### Steps
 
-1. 调用健康检查接口
+1. Call the health check endpoints
 
-### 执行证据
+### Execution evidence
 
-- 全部依赖 healthy 时：`live` 返回 HTTP 200 / `{"status":"alive"}`，`ready` 返回 HTTP 200 / `{"status":"ready"}`。
-- 分别停止 PostgreSQL、Redis、RabbitMQ 时：`ready` 均返回 HTTP 503 / `{"status":"unavailable"}`；停止 Redis、RabbitMQ 时 `live` 仍返回 HTTP 200。
-- PostgreSQL 与 Redis 恢复 healthy 后，`ready` 自动恢复 HTTP 200。
-- RabbitMQ 恢复 healthy 后，`ready` 持续返回 HTTP 503，只有重启 API 后才恢复 HTTP 200；**FAIL**，见 DEF-020。
+- With all dependencies healthy: `live` returned HTTP 200 / `{"status":"alive"}` and `ready` returned HTTP 200 / `{"status":"ready"}`.
+- Stopping PostgreSQL, Redis or RabbitMQ individually: `ready` returned HTTP 503 / `{"status":"unavailable"}` in each case; with Redis or RabbitMQ stopped, `live` still returned HTTP 200.
+- After PostgreSQL and Redis recovered to healthy, `ready` automatically recovered to HTTP 200.
+- After RabbitMQ recovered to healthy, `ready` kept returning HTTP 503 until the API was restarted; **FAIL**, see DEF-020.
 
-### 2026-08-12 修复复测证据
+### 2026-08-12 fix retest evidence
 
-- 停止 RabbitMQ 后，API 保持运行且 `ready` 返回 HTTP 503 / `{"status":"unavailable"}`。
-- 恢复 RabbitMQ 后未重启 API；连接监督器通过退避重试自动重连，`ready` 恢复 HTTP 200 / `{"status":"ready"}`。
-- `gaap.tasks` 与 `gaap.dashboard` 均重新注册 1 个需要 ACK 的消费者。
-- 结果：**PASS**；DEF-020 已修复。
+- After stopping RabbitMQ, the API kept running and `ready` returned HTTP 503 / `{"status":"unavailable"}`.
+- After restoring RabbitMQ, no API restart was needed; the connection supervisor reconnected automatically via backoff retries, and `ready` recovered to HTTP 200 / `{"status":"ready"}`.
+- Both `gaap.tasks` and `gaap.dashboard` re-registered one consumer requiring ACKs each.
+- Result: **PASS**; DEF-020 fixed.
 
-## TC-HEALTH-002 — 数据库连接检查
+## TC-HEALTH-002 — Database Connection Check
 
-- 模块：健康检查模块 / 系统健康检查
-- 优先级：P0
-- 执行状态：**PASS**
-- 执行批次：2026-08-12 自动化 UAT
-- 执行环境：本地 production-mode UAT Docker 栈
-- Beta 处置：**CORE GATE**
-- 前置条件：数据库正常运行
-- 测试数据：无
-- 预期结果：返回数据库连接状态为健康
+- Module: Health Checks module / System health check
+- Priority: P0
+- Execution status: **PASS**
+- Execution batch: 2026-08-12 automated UAT
+- Execution environment: local production-mode UAT Docker stack
+- Beta disposition: **CORE GATE**
+- Preconditions: database running normally
+- Test data: none
+- Expected result: returns that the database connection status is healthy
 
-### 步骤
+### Steps
 
-1. 调用健康检查接口
-2. 检查数据库连接状态
+1. Call the health check endpoints
+2. Check the database connection status
 
-### 执行证据
+### Execution evidence
 
-- PostgreSQL healthy 时 `ready` 为 HTTP 200；停止 PostgreSQL 后降为 HTTP 503；恢复 PostgreSQL 后自动恢复 HTTP 200；**PASS**。
+- With PostgreSQL healthy, `ready` was HTTP 200; after stopping PostgreSQL it dropped to HTTP 503; after restoring PostgreSQL it automatically recovered to HTTP 200; **PASS**.
 
-## TC-HEALTH-003 — Redis连接检查
+## TC-HEALTH-003 — Redis Connection Check
 
-- 模块：健康检查模块 / 系统健康检查
-- 优先级：P0
-- 执行状态：**PASS**
-- 执行批次：2026-08-12 自动化 UAT
-- 执行环境：本地 production-mode UAT Docker 栈
-- Beta 处置：**CORE GATE**
-- 前置条件：Redis正常运行
-- 测试数据：无
-- 预期结果：返回Redis连接状态为健康
+- Module: Health Checks module / System health check
+- Priority: P0
+- Execution status: **PASS**
+- Execution batch: 2026-08-12 automated UAT
+- Execution environment: local production-mode UAT Docker stack
+- Beta disposition: **CORE GATE**
+- Preconditions: Redis running normally
+- Test data: none
+- Expected result: returns that the Redis connection status is healthy
 
-### 步骤
+### Steps
 
-1. 调用健康检查接口
-2. 检查Redis连接状态
+1. Call the health check endpoints
+2. Check the Redis connection status
 
-### 执行证据
+### Execution evidence
 
-- Redis healthy 时 `ready` 为 HTTP 200；停止 Redis 后降为 HTTP 503 且 `live` 保持 HTTP 200；恢复 Redis 后 `ready` 自动恢复 HTTP 200；**PASS**。
+- With Redis healthy, `ready` was HTTP 200; after stopping Redis it dropped to HTTP 503 while `live` stayed at HTTP 200; after restoring Redis, `ready` automatically recovered to HTTP 200; **PASS**.

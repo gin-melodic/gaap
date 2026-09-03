@@ -1,424 +1,424 @@
-# 交易 UAT
+# Transactions UAT
 
-> 本文件只保留本次 Beta 范围内的用例；非 Beta 用例统一存放于 `deferred.md`。PASS 仅代表原 UAT 已通过，NOT RUN 表示尚未执行。
+> This file only keeps cases within this Beta's scope; non-Beta cases live in `deferred.md`. PASS means the case already passed under UAT, and NOT RUN means it has not been executed yet.
 
-2026-08-13 全量复测批次：[`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md)。
+2026-08-13 full retest batch: [`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md).
 
-## TC-TXN-LIST-001 — 查询所有交易列表
+## TC-TXN-LIST-001 — Query Full Transaction List
 
-- 模块：交易管理模块 / 交易列表查询
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在交易数据
-- 测试数据：无筛选条件
-- 预期结果：1. 返回所有交易列表
-2. 包含交易ID日期金额类型等
-3. 支持分页
+- Module: Transaction management module / Transaction list query
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and transaction data exists
+- Test data: no filter conditions
+- Expected result: 1. Returns the full transaction list
+  2. Includes transaction ID, date, amount, type, etc.
+  3. Supports pagination
 
-### 步骤
+### Steps
 
-1. 调用交易列表接口
-2. 不添加筛选条件
+1. Call the transaction list API
+2. Do not add any filter conditions
 
-## TC-TXN-LIST-002 — 按日期范围筛选交易
+## TC-TXN-LIST-002 — Filter Transactions by Date Range
 
-- 模块：交易管理模块 / 交易列表查询
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在交易数据
-- 测试数据：开始日期: 2026-01-01 结束日期: 2026-01-31
-- 预期结果：只返回指定日期范围内的交易
+- Module: Transaction management module / Transaction list query
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and transaction data exists
+- Test data: start date: 2026-01-01, end date: 2026-01-31
+- Expected result: only transactions within the specified date range are returned
 
-### 步骤
+### Steps
 
-1. 调用交易列表接口
-2. 指定开始和结束日期
+1. Call the transaction list API
+2. Specify start and end dates
 
-## TC-TXN-LIST-003 — 按账户筛选交易
+## TC-TXN-LIST-003 — Filter Transactions by Account
 
-- 模块：交易管理模块 / 交易列表查询
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在交易数据
-- 测试数据：账户ID: 有效账户ID
-- 预期结果：只返回与该账户相关的交易
+- Module: Transaction management module / Transaction list query
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and transaction data exists
+- Test data: account ID: a valid account ID
+- Expected result: only transactions related to that account are returned
 
-### 步骤
+### Steps
 
-1. 调用交易列表接口
-2. 指定账户ID
+1. Call the transaction list API
+2. Specify an account ID
 
-## TC-TXN-LIST-004 — 按交易类型筛选
+## TC-TXN-LIST-004 — Filter by Transaction Type
 
-- 模块：交易管理模块 / 交易列表查询
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在不同类型的交易
-- 测试数据：交易类型: INCOME
-- 预期结果：只返回收入类型的交易
+- Module: Transaction management module / Transaction list query
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and transactions of different types exist
+- Test data: transaction type: INCOME
+- Expected result: only income-type transactions are returned
 
-### 步骤
+### Steps
 
-1. 调用交易列表接口
-2. 指定交易类型
+1. Call the transaction list API
+2. Specify a transaction type
 
-## TC-TXN-LIST-005 — 交易列表排序 - 按日期降序
+## TC-TXN-LIST-005 — Transaction List Sorting - Date Descending
 
-- 模块：交易管理模块 / 交易列表查询
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在交易数据
-- 测试数据：排序字段: date 排序方向: desc
-- 预期结果：交易按日期从新到旧排列
+- Module: Transaction management module / Transaction list query
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and transaction data exists
+- Test data: sort field: date, sort direction: desc
+- Expected result: transactions are ordered by date from newest to oldest
 
-### 步骤
+### Steps
 
-1. 调用交易列表接口
-2. 指定按日期降序排序
+1. Call the transaction list API
+2. Specify descending-by-date sorting
 
-## TC-TXN-LIST-006 — 分页查询交易
+## TC-TXN-LIST-006 — Paginated Transaction Query
 
-- 模块：交易管理模块 / 交易列表查询
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在大量交易数据
-- 测试数据：页码: 1 每页数量: 10
-- 预期结果：1. 返回第一页的10条交易
-2. 返回总数和总页数信息
+- Module: Transaction management module / Transaction list query
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and there are many transactions
+- Test data: page number: 1, page size: 10
+- Expected result: 1. Returns the first page with 10 transactions
+  2. Returns total count and total pages information
 
-### 步骤
+### Steps
 
-1. 调用交易列表接口
-2. 指定页码和每页数量
+1. Call the transaction list API
+2. Specify page number and page size
 
-## TC-TXN-CREATE-001 — 创建收入交易
+## TC-TXN-CREATE-001 — Create an Income Transaction
 
-- 模块：交易管理模块 / 创建交易
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在收入账户和资产账户
-- 测试数据：日期: 2026-01-15 来源账户: 收入账户 目标账户: 资产账户 金额: 5000.00 CNY 类型: INCOME 备注: 工资收入
-- 预期结果：1. 创建成功
-2. 返回交易ID
-3. 资产账户余额增加
-- 计算/验证：资产_old+5000=资产_new;收入_old-5000=收入_new
-
-### 步骤
-
-1. 调用创建交易接口
-2. 填写收入交易信息
+- Module: Transaction management module / Create transaction
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and both an income account and an asset account exist
+- Test data: date: 2026-01-15, from account: income account, to account: asset account, amount: 5000.00 CNY, type: INCOME, note: Salary income
+- Expected result: 1. Creation succeeds
+  2. Returns the transaction ID
+  3. The asset account balance increases
+- Calculation/verification: asset_old + 5000 = asset_new; income_old - 5000 = income_new
+
+### Steps
+
+1. Call the create-transaction API
+2. Fill in the income transaction information
 
-## TC-TXN-CREATE-002 — 创建支出交易
-
-- 模块：交易管理模块 / 创建交易
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在支出账户和资产账户
-- 测试数据：日期: 2026-01-16 来源账户: 资产账户 目标账户: 支出账户 金额: 100.00 CNY 类型: EXPENSE 备注: 餐饮支出
-- 预期结果：1. 创建成功
-2. 资产账户余额减少
-- 计算/验证：资产_old-100=资产_new;支出_old+100=支出_new
+## TC-TXN-CREATE-002 — Create an Expense Transaction
+
+- Module: Transaction management module / Create transaction
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and both an expense account and an asset account exist
+- Test data: date: 2026-01-16, from account: asset account, to account: expense account, amount: 100.00 CNY, type: EXPENSE, note: Dining expense
+- Expected result: 1. Creation succeeds
+  2. The asset account balance decreases
+- Calculation/verification: asset_old - 100 = asset_new; expense_old + 100 = expense_new
 
-### 步骤
+### Steps
 
-1. 调用创建交易接口
-2. 填写支出交易信息
-
-## TC-TXN-CREATE-003 — 创建转账交易
-
-- 模块：交易管理模块 / 创建交易
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在两个资产账户
-- 测试数据：日期: 2026-01-17 来源账户: 账户A 目标账户: 账户B 金额: 1000.00 CNY 类型: TRANSFER 备注: 账户间转账
-- 预期结果：1. 创建成功
-2. 账户A余额减少
-3. 账户B余额增加
-- 计算/验证：资产A_old-1000=资产A_new;资产B_old+1000=资产B_new
+1. Call the create-transaction API
+2. Fill in the expense transaction information
+
+## TC-TXN-CREATE-003 — Create a Transfer Transaction
+
+- Module: Transaction management module / Create transaction
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and two asset accounts exist
+- Test data: date: 2026-01-17, from account: Account A, to account: Account B, amount: 1000.00 CNY, type: TRANSFER, note: Inter-account transfer
+- Expected result: 1. Creation succeeds
+  2. Account A's balance decreases
+  3. Account B's balance increases
+- Calculation/verification: assetA_old - 1000 = assetA_new; assetB_old + 1000 = assetB_new
 
-### 步骤
+### Steps
 
-1. 调用创建交易接口
-2. 填写转账交易信息
-
-## TC-TXN-CREATE-004 — 创建交易 - 零金额
-
-- 模块：交易管理模块 / 创建交易
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：金额: 0
-- 预期结果：根据系统设计可能创建成功或提示金额无效
+1. Call the create-transaction API
+2. Fill in the transfer transaction information
+
+## TC-TXN-CREATE-004 — Create Transaction - Zero Amount
+
+- Module: Transaction management module / Create transaction
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: amount: 0
+- Expected result: depending on system design, creation may succeed or an invalid-amount error may be shown
 
-### 步骤
+### Steps
 
-1. 调用创建交易接口
-2. 设置金额为0
-
-## TC-TXN-CREATE-005 — 创建交易 - 负金额
+1. Call the create-transaction API
+2. Set the amount to 0
+
+## TC-TXN-CREATE-005 — Create Transaction - Negative Amount
 
-- 模块：交易管理模块 / 创建交易
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：金额: -100.00
-- 预期结果：根据系统设计可能拒绝或自动取绝对值
+- Module: Transaction management module / Create transaction
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: amount: -100.00
+- Expected result: depending on system design, it may be rejected or automatically absolved to a positive value
 
-### 步骤
+### Steps
 
-1. 调用创建交易接口
-2. 设置金额为负数
-
-## TC-TXN-CREATE-006 — 创建交易 - 不存在的账户
+1. Call the create-transaction API
+2. Set a negative amount
+
+## TC-TXN-CREATE-006 — Create Transaction - Nonexistent Account
 
-- 模块：交易管理模块 / 创建交易
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：来源账户: 不存在的ID
-- 预期结果：创建失败提示账户不存在
+- Module: Transaction management module / Create transaction
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: from account: a nonexistent ID
+- Expected result: creation fails with an "account does not exist" message
 
-### 步骤
+### Steps
 
-1. 调用创建交易接口
-2. 使用不存在的账户ID
+1. Call the create-transaction API
+2. Use a nonexistent account ID
 
-## TC-TXN-CREATE-007 — 创建交易 - 相同账户转账
-
-- 模块：交易管理模块 / 创建交易
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：来源账户: 账户A 目标账户: 账户A
-- 预期结果：根据系统设计可能拒绝或允许
+## TC-TXN-CREATE-007 — Create Transaction - Transfer Between Same Account
+
+- Module: Transaction management module / Create transaction
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: from account: Account A, to account: Account A
+- Expected result: depending on system design, it may be rejected or allowed
 
-### 步骤
+### Steps
 
-1. 调用创建交易接口
-2. 来源和目标账户相同
+1. Call the create-transaction API
+2. Use the same account for source and target
 
-## TC-TXN-CREATE-008 — 创建交易 - 未来日期
-
-- 模块：交易管理模块 / 创建交易
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：日期: 2027-01-01
-- 预期结果：创建成功交易记录在未来日期
+## TC-TXN-CREATE-008 — Create Transaction - Future Date
+
+- Module: Transaction management module / Create transaction
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: date: 2027-01-01
+- Expected result: creation succeeds and the transaction is recorded with a future date
 
-### 步骤
+### Steps
 
-1. 调用创建交易接口
-2. 设置未来日期
+1. Call the create-transaction API
+2. Set a future date
 
-## TC-TXN-CREATE-009 — 创建交易 - 极小金额
+## TC-TXN-CREATE-009 — Create Transaction - Minimal Amount
 
-- 模块：交易管理模块 / 创建交易
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：金额: 0.001 CNY
-- 预期结果：根据系统精度设计可能四舍五入或拒绝
+- Module: Transaction management module / Create transaction
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: amount: 0.001 CNY
+- Expected result: depending on the system's precision design, it may be rounded or rejected
 
-### 步骤
+### Steps
 
-1. 调用创建交易接口
-2. 设置极小金额
+1. Call the create-transaction API
+2. Set a minimal amount
 
-## TC-TXN-CREATE-010 — 创建交易 - 大金额
+## TC-TXN-CREATE-010 — Create Transaction - Large Amount
 
-- 模块：交易管理模块 / 创建交易
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：金额: 999999999999.99 CNY
-- 预期结果：创建成功金额正确记录
+- Module: Transaction management module / Create transaction
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: amount: 999999999999.99 CNY
+- Expected result: creation succeeds and the amount is recorded correctly
 
-### 步骤
+### Steps
 
-1. 调用创建交易接口
-2. 设置大金额
+1. Call the create-transaction API
+2. Set a large amount
 
-## TC-TXN-GET-001 — 获取存在的交易详情
+## TC-TXN-GET-001 — Get Details of an Existing Transaction
 
-- 模块：交易管理模块 / 获取交易详情
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录交易存在
-- 测试数据：有效交易ID
-- 预期结果：1. 返回交易完整信息
-2. 包含ID日期金额类型账户等
+- Module: Transaction management module / Get transaction details
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the transaction exists
+- Test data: a valid transaction ID
+- Expected result: 1. Returns complete transaction information
+  2. Includes ID, date, amount, type, accounts, etc.
 
-### 步骤
+### Steps
 
-1. 调用获取交易详情接口
-2. 传入有效交易ID
+1. Call the get-transaction-details API
+2. Pass in a valid transaction ID
 
-## TC-TXN-GET-002 — 获取不存在的交易详情
+## TC-TXN-GET-002 — Get Details of a Nonexistent Transaction
 
-- 模块：交易管理模块 / 获取交易详情
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：不存在的交易ID
-- 预期结果：返回错误提示交易不存在
+- Module: Transaction management module / Get transaction details
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: a nonexistent transaction ID
+- Expected result: an error is returned stating the transaction does not exist
 
-### 步骤
+### Steps
 
-1. 调用获取交易详情接口
-2. 传入不存在的交易ID
+1. Call the get-transaction-details API
+2. Pass in a nonexistent transaction ID
 
-## TC-TXN-UPDATE-001 — 更新交易金额
+## TC-TXN-UPDATE-001 — Update Transaction Amount
 
-- 模块：交易管理模块 / 更新交易
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录交易存在
-- 测试数据：交易ID: 有效ID 新金额: 200.00
-- 预期结果：1. 更新成功
-2. 相关账户余额自动调整
-- 计算/验证：调整幅度=新金额-旧金额
+- Module: Transaction management module / Update transaction
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the transaction exists
+- Test data: transaction ID: a valid ID, new amount: 200.00
+- Expected result: 1. The update succeeds
+  2. Related account balances are adjusted automatically
+- Calculation/verification: adjustment = new amount - old amount
 
-### 步骤
+### Steps
 
-1. 调用更新交易接口
-2. 修改交易金额
+1. Call the update-transaction API
+2. Change the transaction amount
 
-## TC-TXN-UPDATE-002 — 更新交易日期
+## TC-TXN-UPDATE-002 — Update Transaction Date
 
-- 模块：交易管理模块 / 更新交易
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录交易存在
-- 测试数据：交易ID: 有效ID 新日期: 2026-01-20
-- 预期结果：更新成功交易日期已变更
+- Module: Transaction management module / Update transaction
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the transaction exists
+- Test data: transaction ID: a valid ID, new date: 2026-01-20
+- Expected result: the update succeeds and the transaction date has changed
 
-### 步骤
+### Steps
 
-1. 调用更新交易接口
-2. 修改交易日期
+1. Call the update-transaction API
+2. Change the transaction date
 
-## TC-TXN-UPDATE-003 — 更新交易备注
+## TC-TXN-UPDATE-003 — Update Transaction Note
 
-- 模块：交易管理模块 / 更新交易
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录交易存在
-- 测试数据：交易ID: 有效ID 新备注: 更新后的备注
-- 预期结果：更新成功备注已变更
+- Module: Transaction management module / Update transaction
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the transaction exists
+- Test data: transaction ID: a valid ID, new note: Updated Note
+- Expected result: the update succeeds and the note has changed
 
-### 步骤
+### Steps
 
-1. 调用更新交易接口
-2. 修改交易备注
+1. Call the update-transaction API
+2. Change the transaction note
 
-## TC-TXN-UPDATE-004 — 更新交易账户
+## TC-TXN-UPDATE-004 — Update Transaction Account
 
-- 模块：交易管理模块 / 更新交易
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录交易存在
-- 测试数据：交易ID: 有效ID 新来源账户: 另一个账户ID
-- 预期结果：1. 更新成功
-2. 原账户余额回滚
-3. 新账户余额更新
+- Module: Transaction management module / Update transaction
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the transaction exists
+- Test data: transaction ID: a valid ID, new source account: another account ID
+- Expected result: 1. The update succeeds
+  2. The original account balance rolls back
+  3. The new account balance updates
 
-### 步骤
+### Steps
 
-1. 调用更新交易接口
-2. 修改来源或目标账户
+1. Call the update-transaction API
+2. Change the source or target account
 
-## TC-TXN-DELETE-001 — 删除存在的交易
+## TC-TXN-DELETE-001 — Delete an Existing Transaction
 
-- 模块：交易管理模块 / 删除交易
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录交易存在
-- 测试数据：有效交易ID
-- 预期结果：1. 删除成功
-2. 相关账户余额自动回滚
+- Module: Transaction management module / Delete transaction
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the transaction exists
+- Test data: a valid transaction ID
+- Expected result: 1. Deletion succeeds
+  2. Related account balances roll back automatically
 
-### 步骤
+### Steps
 
-1. 调用删除交易接口
-2. 传入交易ID
+1. Call the delete-transaction API
+2. Pass in the transaction ID
 
-## TC-TXN-DELETE-002 — 删除不存在的交易
+## TC-TXN-DELETE-002 — Delete a Nonexistent Transaction
 
-- 模块：交易管理模块 / 删除交易
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：不存在的交易ID
-- 预期结果：删除失败提示交易不存在
+- Module: Transaction management module / Delete transaction
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: a nonexistent transaction ID
+- Expected result: deletion fails with a "transaction does not exist" message
 
-### 步骤
+### Steps
 
-1. 调用删除交易接口
-2. 传入不存在的交易ID
+1. Call the delete-transaction API
+2. Pass in a nonexistent transaction ID
 
-## TC-EDGE-TXN-001 — 极小精度金额交易
+## TC-EDGE-TXN-001 — Extremely Small Precision Amount Transaction
 
-- 模块：边界条件与异常场景 / 交易边界测试
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：金额: 0.0001 CNY
-- 预期结果：根据货币精度设计处理
+- Module: Boundary Conditions & Exception Scenarios / Transaction boundary tests
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: amount: 0.0001 CNY
+- Expected result: handled according to the currency precision design
 
-### 步骤
+### Steps
 
-1. 创建极小精度金额的交易
+1. Create a transaction with an extremely small precision amount
 
-## TC-EDGE-TXN-002 — 远古日期交易
+## TC-EDGE-TXN-002 — Very Old Date Transaction
 
-- 模块：边界条件与异常场景 / 交易边界测试
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：日期: 1900-01-01
-- 预期结果：根据系统设计可能成功或拒绝
+- Module: Boundary Conditions & Exception Scenarios / Transaction boundary tests
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: date: 1900-01-01
+- Expected result: depending on system design, it may succeed or be rejected
 
-### 步骤
+### Steps
 
-1. 创建日期为很久以前的交易
+1. Create a transaction with a very old date
 
-## TC-EDGE-TXN-003 — 超长交易备注
+## TC-EDGE-TXN-003 — Overly Long Transaction Note
 
-- 模块：边界条件与异常场景 / 交易边界测试
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：备注: 超过1000字符的备注内容
-- 预期结果：创建失败或自动截断
+- Module: Boundary Conditions & Exception Scenarios / Transaction boundary tests
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: note: note content of more than 1000 characters
+- Expected result: creation fails or the note is truncated automatically
 
-### 步骤
+### Steps
 
-1. 创建交易时输入超长备注
+1. Enter an overly long note when creating the transaction

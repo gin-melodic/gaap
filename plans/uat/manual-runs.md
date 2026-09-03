@@ -1,20 +1,20 @@
-# 人工 UAT 批次记录
+# Manual UAT Batch Records
 
-本文件记录人工 UAT 批次结论。逐用例状态仍以各模块文档中的“执行状态”和执行证据为准。
+This file records the conclusions of manual UAT batches. Per-case status remains based on each module document's "Execution Status" and execution evidence as authoritative.
 
-## 2026-08-12 — 人工 UAT
+## 2026-08-12 — Manual UAT
 
-- 结果：**PASS**。
-- 确认时间：2026-08-13。
-- 确认来源：项目负责人确认“2026-08-12 的人工 UAT 通过”。
-- 执行环境：未单独提供；当前计划中的 UAT 基线入口为 `https://gaap.local`。
-- 用例范围与逐项证据：未随确认提供，因此没有把仍标记为 `NOT RUN` 的用例批量改为
-  `PASS`。后续补齐映射时，必须在对应模块文档登记执行批次、环境和证据。
+- Result: **PASS**.
+- Confirmed at: 2026-08-13.
+- Source of confirmation: the project lead confirmed "the manual UAT on 2026-08-12 passed".
+- Execution environment: not provided separately; the current planned UAT baseline entry point is `https://gaap.local`.
+- Case scope and per-item evidence: not supplied with the confirmation, so cases still marked `NOT RUN` were not bulk-changed to
+  `PASS`. When the mapping is completed later, execution batch, environment and evidence must be recorded in the corresponding module document.
 
-## 2026-08-13 — Beta RC 全量 UAT
+## 2026-08-13 — Beta RC Full UAT
 
-- 执行批次：`UAT-20260813-BETA-RC-01`。
-- 结果：**82/82 Beta 用例 PASS，0 FAIL，0 NOT RUN**。
-- 方式：真实 Chrome 页面流程、真实 protobuf + ALE HTTPS 协议、原始 ALE 攻击请求、
-  Compose 故障注入和 PostgreSQL 只读对账。
-- 完整证据：[`runs/2026-08-13-beta-rc-01.md`](runs/2026-08-13-beta-rc-01.md)。
+- Execution batch: `UAT-20260813-BETA-RC-01`.
+- Result: **82/82 Beta cases PASS, 0 FAIL, 0 NOT RUN**.
+- Method: real Chrome page flows, the real protobuf + ALE HTTPS protocol, raw ALE attack requests,
+  Compose fault injection and PostgreSQL read-only reconciliation.
+- Full evidence: [`runs/2026-08-13-beta-rc-01.md`](runs/2026-08-13-beta-rc-01.md).

@@ -1,249 +1,211 @@
-# GAAP 邀请制 Beta 上线计划
+# GAAP Invite-Only Beta Release Plan
 
-版本：2026-08-13 修订版  
-目标发布日期：2026-08-14  
-目标域名：`gaap.cc`  
-当前验收环境：`https://gaap.local`
+Version: 2026-08-13 revision  
+Target release date: 2026-08-14  
+Target domain: `gaap.cc`  
+Current acceptance environment: `https://gaap.local`
 
-本文档是本次 Beta 的唯一主上线计划。UAT 状态以 `plans/uat/` 为准，生产操作以
-`docs/production-runbook.md` 为准，组件取舍依据
-`docs/beta-component-dependency-audit.md`。
+This document is the single main release plan for this Beta round. UAT status is governed by
+`plans/uat/`, production operations by `docs/production-runbook.md`, and component keep/drop decisions by
+`docs/beta-component-dependency-audit.md`.
 
-## 1. 当前基线与上线范围
+## 1. Current Baseline & Release Scope
 
-- 2026-08-13 批次 `UAT-20260813-BETA-RC-01` 已重跑 8 个历史 CORE REGRESSION 并
-  完成 74 个 CORE GATE：82/82 PASS，0 FAIL，0 NOT RUN。
-- 原 120 个用例中另有 38 个 DEFERRED，保持 NOT RUN，不计入 Beta 功能范围。
-- 自动化测试当前基线：后端 152 个、前端 74 个常规测试通过；真实浏览器和协议结果
-  单独登记为 UAT，不以单元测试替代。
-- 生产使用全新 PostgreSQL 数据库，不导入 UAT 数据。
-- Beta 采用服务端邮箱白名单、低并发邀请制和单用户基准币种。
+- The 2026-08-13 batch `UAT-20260813-BETA-RC-01` re-ran the 8 historical CORE REGRESSION cases and
+  completed all 74 CORE GATE cases: 82/82 PASS, 0 FAIL, 0 NOT RUN.
+- Of the original 120 cases, another 38 are DEFERRED; they remain NOT RUN and do not count toward Beta feature scope.
+- Automated test baseline today: 152 backend tests and 74 standard frontend tests passing; real browser and protocol results are
+  recorded separately as UAT and never substituted by unit tests.
+- Production uses a brand-new PostgreSQL database; no UAT data is imported.
+- The Beta uses server-side email whitelisting, low-concurrency invitation-only access, and a single base currency per user.
 
-首版开放：
+Open in the first version:
 
-- 白名单注册；
-- 登录、刷新、退出及多设备独立 session；
-- 资产、负债、收入、支出账户；
-- 收入、支出、转账及交易更新、删除；
-- 基础 Dashboard 与 30 天余额趋势；
-- live、ready 和 HTTPS。
+- Whitelisted registration;
+- Login, refresh, logout, and independent multi-device sessions;
+- Asset, liability, income and expense accounts;
+- Income, expense and transfer transactions, plus transaction update and delete;
+- Basic Dashboard with a 30-day balance trend;
+- live, ready, and HTTPS.
 
-首版延期：
+Deferred in the first version:
 
-- 2FA 设置与启用；
-- 密码修改；
-- 有交易账户的迁移删除；
-- Pro 用户、账户组和子账户；
-- 任务中心、数据导入导出；
-- WebSocket 用户入口；
-- 汇率、多币种账户和换算估值。
+- 2FA setup and enabling;
+- Password change;
+- Migration-delete for accounts that have transactions;
+- Pro users, account groups and sub-accounts;
+- Task center and data import/export;
+- WebSocket user entry point;
+- Exchange rates, multi-currency accounts and converted valuations.
 
-## 2. 生产组件基线
+## 2. Production Component Baseline
 
-生产与 UAT 均部署：Caddy、Next.js Web、GoFrame API、PostgreSQL、Redis、RabbitMQ。
+Both production and UAT deploy: Caddy, Next.js Web, GoFrame API, PostgreSQL, Redis and RabbitMQ.
 
-RabbitMQ 是 Dashboard 快照刷新链路的核心依赖，不能再因任务中心延期而删除。
-RabbitMQ、PostgreSQL 和 Redis 只加入 Docker 内部数据网络，不向公网或宿主机开放
-业务端口。
+RabbitMQ is a core dependency of the Dashboard snapshot refresh chain and can no longer be removed just because the task center is deferred.
+RabbitMQ, PostgreSQL and Redis join only the Docker internal data network; no business ports are exposed to the public internet or the host machine.
 
-API 启动必须成功连接 PostgreSQL、Redis 和 RabbitMQ 并完成迁移；ready 同时检查：
+The API startup must connect successfully to PostgreSQL, Redis and RabbitMQ and complete migrations before it starts; ready additionally checks:
 
-- PostgreSQL 可查询；
-- Redis/ALE 可用；
-- RabbitMQ 连接仍存活；
-- 所有 `manifest/sql` 迁移已记录。
+- PostgreSQL is queryable;
+- Redis/ALE is available;
+- The RabbitMQ connection is still alive;
+- All `manifest/sql` migrations are recorded.
 
-任一核心依赖不可用时 API 不应接收流量。RabbitMQ 运行中重启时 ready 返回 503；
-连接监督器通过退避自动重连，2026-08-13 UAT 在 17 秒内恢复 ready 200，
-`gaap.dashboard` 与 `gaap.tasks` 各自动恢复 1 个消费者，无需重启 API。
+When any core dependency is unavailable, the API must not accept traffic. When RabbitMQ restarts while running, ready returns 503;
+the connection supervisor reconnects automatically via backoff — the 2026-08-13 UAT recovered ready to 200 within 17 seconds and both `gaap.dashboard` and `gaap.tasks` each auto-recovered one consumer without an API restart.
 
-## 3. 核心整改状态
+## 3. Core Remediation Status
 
-### UAT 与缺陷基线
+### UAT & Defect Baseline
 
-- **已完成**：Excel 工作簿拆分为 `plans/uat/` Markdown，旧 Excel 弃用。
-- **已完成**：8 个历史 PASS 与其余 NOT RUN/DEFERRED 状态按真实结果记录。
-- **已完成**：原 Bug、TODO 和新增 UAT 问题合并到 `plans/uat/defects.md`。
-- **已完成**：2026-08-12 人工 UAT 批次通过；批次范围按
-  `plans/uat/manual-runs.md` 记录。
-- **已完成**：全量 UAT 结果映射到 82 个 Beta 用例，证据见
-  `plans/uat/runs/2026-08-13-beta-rc-01.md`。
-- **门禁**：核心用例不得保持 NOT RUN；DEFERRED 不得写成 PASS。
+- **Done**: the Excel workbook was split into `plans/uat/` Markdown files; the old Excel is deprecated.
+- **Done**: the 8 historical PASS entries and all other NOT RUN/DEFERRED statuses were recorded according to actual results.
+- **Done**: the original Bug, TODO and newly found UAT issues were merged into `plans/uat/defects.md`.
+- **Done**: the 2026-08-12 manual UAT batch passed; its scope is recorded in
+  `plans/uat/manual-runs.md`.
+- **Done**: full UAT results mapped onto the 82 Beta cases, with evidence in
+  `plans/uat/runs/2026-08-13-beta-rc-01.md`.
+- **Gate**: core cases must not remain NOT RUN; DEFERRED entries must not be written as PASS.
 
 ### ALE + Protobuf
 
-- **已完成**：业务请求收敛到 `secureRequest + protobuf + ALE`。
-- **已完成**：统一 protobuf 错误结构和 session 丢失 401 标记。
-- **已完成**：JWT 使用 `sid`，Redis session 按用户与设备隔离，refresh 保持 sid 并轮换。
-- **已完成**：Redis session key 丢失时返回可识别的 401，不向用户暴露
-  `OperationError`。
-- **门禁通过**：篡改、重放、过期 timestamp、无效 sid、敏感日志扫描和多设备独立
-  refresh/logout 全部通过。
+- **Done**: business requests converge on `secureRequest + protobuf + ALE`.
+- **Done**: unified protobuf error structure and 401 marker for lost sessions.
+- **Done**: JWTs use `sid`, Redis sessions are isolated per user and device, and refresh keeps the sid while rotating tokens.
+- **Done**: when a Redis session key is missing, a recognizable 401 is returned without exposing raw
+  `OperationError` to users.
+- **Gate passed**: tampering, replay, expired timestamps, invalid sids, sensitive log scanning, and independent multi-device
+  refresh/logout all passed.
 
-### 账务安全与 Dashboard
+### Ledger Safety & Dashboard
 
-- **已完成**：交易账户归属、账户类型、币种、金额、同账户和排序字段校验。
-- **已完成**：创建、更新、删除交易使用数据库事务，提交后再失效缓存和刷新 Dashboard。
-- **已完成**：账户按固定 UUID 顺序加锁，更新检查受影响行数。
-- **已完成**：后端金额使用 `shopspring/decimal`，前端金额使用 Decimal.js。
-- **已完成**：交易和账户变更同时失效 Redis 与 PostgreSQL Dashboard 旧快照；前端同时
-  失效 Dashboard Query。
-- **已完成**：API 启动从账户和交易真值重建 Dashboard，不再直接恢复可能过期的持久化
-  快照。
-- **已完成**：RabbitMQ Dashboard worker 在 UAT/生产模式启动，API/ready 对 RabbitMQ
-  fail closed。
-- **已完成**：有交易账户由后端拒绝删除，前端不再显示迁移删除界面。
-- **已完成自动化门禁**：历史日期交易创建、更新、删除后的趋势；固定 UUID 顺序行锁；
-  第二账户更新失败时的事务回滚；跨全部账户类型的流水重算及 1 nano 差异边界。
-- **UAT 通过**：最终只读对账检查 142 个账户、62 笔有效交易，无余额差异或完整性
-  异常；真实浏览器与协议确认历史交易创建、移动日期、删除后的 30 天趋势正确收敛。
-- **UAT 通过**：账户组与子账户成功路径已延期；Free/Beta 用户直接提交 `is_group`
-  或 `parent_id` 均被拒绝，且账户与期初余额交易无脏写入。
+- **Done**: validation for transaction account ownership, account type, currency, amount, same-account cases and sort fields.
+- **Done**: creating, updating and deleting transactions use database transactions; caches are invalidated and the Dashboard refreshed only after commit.
+- **Done**: accounts are locked in fixed UUID order, and updates check the number of affected rows.
+- **Done**: backend amounts use `shopspring/decimal`; frontend amounts use Decimal.js.
+- **Done**: transaction and account changes invalidate both stale Redis and PostgreSQL Dashboard snapshots at once; the frontend also invalidates its Dashboard Query at the same time.
+- **Done**: API startup rebuilds the Dashboard from the source-of-truth accounts and transactions, instead of restoring possibly stale persisted snapshots directly.
+- **Done**: the RabbitMQ Dashboard worker starts in UAT/production modes, and the API/ready fails closed on RabbitMQ.
+- **Done**: accounts with transactions are refused for deletion by the backend; the frontend no longer shows a migration-delete UI.
+- **Automated gate done**: trends after creating/updating/deleting historical-date transactions; fixed UUID order row locks;
+  transaction rollback when the second account update fails; ledger recalculation across all account types plus a 1-nano difference boundary.
+- **UAT passed**: final read-only reconciliation checked 142 accounts and 62 valid transactions with no balance discrepancies or integrity anomalies; real browser and protocol runs confirmed that after creating, date-moving and deleting historical transactions, the 30-day trend converges correctly.
+- **UAT passed**: account group and sub-account success paths are deferred; Free/Beta users submitting `is_group`
+  or `parent_id` directly are all rejected, with no dirty writes to accounts or opening-balance transactions.
 
-### 启动余额与对账策略
+### Startup Balances & Reconciliation Policy
 
-旧启动余额重算使用字符串查询整数交易枚举，且只覆盖部分交易方向和账户类型。简单修到
-“可执行”可能在启动时批量改错余额。
+The old startup balance recalculation queried integer transaction enums with strings and only covered some transaction directions and account types. A minimal "just runnable" fix could have batch-corrupted balances at startup.
 
-本版策略：
+Policy for this version:
 
-- **已完成**：从生产/UAT启动链路移除自动余额改写；
-- 账户余额只由创建、更新、删除交易的数据库事务更新并持久化；
-- 启动只重建派生 Dashboard，不静默修账；
-- **已完成**：增加强制 PostgreSQL `READ ONLY` 的对账命令，覆盖资产、负债、收入、
-  支出、权益、期初余额和转账；发现差异时以非零状态退出，不写回数据。
+- **Done**: automatic balance rewriting was removed from the production/UAT startup chain;
+- Account balances are updated and persisted solely by database transactions on transaction create/update/delete;
+- Startup only rebuilds derived Dashboard data — no silent ledger repair;
+- **Done**: added a reconciliation command that enforces PostgreSQL `READ ONLY`, covering assets, liabilities, income, expense, equity, opening balances and transfers; it exits non-zero when differences are found and never writes back data.
 
-### 生产运行能力
+### Production Operational Readiness
 
-- **已完成**：版本化迁移、生产镜像、非 root/read-only 容器、Caddy、PostgreSQL、
-  Redis、RabbitMQ Compose。
-- **已完成**：`/v1/health/live` 和 `/v1/health/ready`。
-- **已完成**：本地加密备份与独立恢复数据库演练。
-- **已完成**：`gaap.local` HTTPS UAT 环境。
-- **已完成**：生产 Secret 生成并以 `0600` 权限部署；API/Web 使用已验证的
-  `linux/amd64` 精确 digest，生产基础设施启动 5 个迁移。
-- **已完成**：VPS 上 API/Web/PostgreSQL/Redis/RabbitMQ 健康；两个 RabbitMQ 队列各
-  1 个消费者且无积压；空生产库只读对账通过。
-- **部分完成**：RabbitMQ 重启期间 ready 返回 503 并在 14 秒恢复，Redis 和 API
-  重启后分别在 0 秒和 1 秒恢复；重启后只读对账再次通过。
-- **已解决**：Cloudflare DNS、橙云、HTTPS 和安全头已恢复；多余的历史 Origin Rule
-  曾将 `gaap.cc` 错误转发至 VPS `8081` 并导致 525，删除后真实 Turnstile 和
-  公网业务 smoke 均已通过。
-- **WAIVED / ACCEPTED RISK**：发布负责人于 2026-08-14 12:15 CST 确认，本轮
-  不需要生产备份、独立恢复演练和每日备份任务；三项从 Beta 发布门禁移除，
-  不写成 PASS。已接受数据库故障时无可验证生产恢复点、不能承诺恢复最新数据的风险。
+- **Done**: versioned migrations, production images, non-root/read-only containers, Caddy, PostgreSQL, Redis and RabbitMQ Compose.
+- **Done**: `/v1/health/live` and `/v1/health/ready`.
+- **Done**: local encrypted backup and an independent restore-database drill.
+- **Done**: the `gaap.local` HTTPS UAT environment.
+- **Done**: production Secrets generated and deployed with `0600` permissions; API/Web use verified exact digests for `linux/amd64`, and production infrastructure started 5 migrations.
+- **Done**: on the VPS, API/Web/PostgreSQL/Redis/RabbitMQ are healthy; both RabbitMQ queues have one consumer each with no backlog; read-only reconciliation of the empty production DB passed.
+- **Partially done**: during a RabbitMQ restart ready returned 503 and recovered in 14 seconds; Redis and API restarts recovered in 0 and 1 second respectively; post-restart read-only reconciliation passed again.
+- **Resolved**: Cloudflare DNS, orange cloud, HTTPS and security headers restored; a leftover historical Origin Rule had mis-forwarded `gaap.cc` to VPS port `8081`, causing 525s — after deleting it, real Turnstile and the public business smoke both passed.
+- **WAIVED / ACCEPTED RISK**: the release owner confirmed at 12:15 CST on 2026-08-14 that this round does not require production backups, an independent restore drill or daily backup jobs; these three items were removed from the Beta release gate and are not written as PASS. The risk of having no verifiable production restore point on database failure — with no guarantee of recovering the latest data — is accepted.
 
-## 4. 测试与发布门禁
+## 4. Testing & Release Gates
 
-自动化门禁：
+Automated gates:
 
-- Go 1.24：`go test ./...`；
-- Node 22：Vitest、ESLint、TypeScript；
-- protobuf/GoFrame 生成代码无漂移；
-- API、Web 两个生产镜像构建；
-- UAT 与生产 Compose 配置校验。
+- Go 1.24: `go test ./...`;
+- Node 22: Vitest, ESLint and TypeScript;
+- No drift in protobuf/GoFrame generated code;
+- Both API and Web production image builds;
+- UAT and production Compose config validation.
 
-人工与集成门禁：
+Manual and integration gates:
 
-- 8 个历史 PASS 全部重新通过；
-- 74 个 CORE GATE 全部执行并通过；
-- 白名单注册、登录、refresh、logout；
-- 创建资产、负债、收入、支出账户；
-- 创建收入、支出、转账；
-- 更新、删除交易并核对双方余额；
-- 历史日期交易在 Dashboard 正确日期产生变化；
-- RabbitMQ 两个队列消费者存在，Dashboard 消息无积压；
-- Redis、RabbitMQ、API 重启后的 session、ready 和 Dashboard 行为符合预期；
-- 只读账务对账无差异；
-- HTTPS 与 Turnstile 完成。
+- All 8 historical PASS entries re-passed;
+- All 74 CORE GATE cases executed and passed;
+- Whitelisted registration, login, refresh and logout;
+- Create asset, liability, income and expense accounts;
+- Create income, expense and transfer transactions;
+- Update and delete transactions while verifying both sides' balances;
+- Historical-date transactions produce changes on the correct dates in the Dashboard;
+- Both RabbitMQ queues have consumers and no backlog of Dashboard messages;
+- Session, ready and Dashboard behavior after Redis/RabbitMQ/API restarts match expectations;
+- Read-only ledger reconciliation has zero differences;
+- HTTPS and Turnstile completed.
 
-以下任一失败立即停止发布：账务不一致、越权、ALE 泄密或无法解密、核心 P0/P1、
-RabbitMQ/Dashboard 丢刷新、迁移失败。
+Any single one of these failures stops the release immediately: ledger inconsistency, authorization bypass, ALE leakage or undecryptable data, core P0/P1 defects, lost RabbitMQ/Dashboard refreshes, or migration failure.
 
-## 5. 修订时间表
+## 5. Revised Timeline
 
-### 8 月 12 日周三
+### Wednesday, August 12
 
-- **已完成**：ALE session 丢失 401、即时创建支出账户、Dashboard 历史交易缺失修复。
-- **已完成**：RabbitMQ 加入 UAT/生产栈，API/ready fail closed。
-- **已完成**：组件依赖审计、启动余额自动改写下线、迁移删除 UI 收敛。
-- **已完成**：人工 UAT 批次通过（用户于 2026-08-13 确认）；逐用例范围和证据仍按
-  `plans/uat/` 状态继续收口。
+- **Done**: fixes for ALE session-lost 401s, instantly created spending accounts and the missing Dashboard historical transactions.
+- **Done**: RabbitMQ added to the UAT/production stack; API/ready fail closed.
+- **Done**: component dependency audit, retirement of startup automatic balance rewriting, convergence of migration-delete UI.
+- **Done**: manual UAT batch passed (user confirmed on 2026-08-13); per-case scope and evidence continue to be reconciled against the
+  `plans/uat/` status.
 
-### 8 月 13 日周四
+### Thursday, August 13
 
-- **已完成**：修复 DEF-019 并完成绕过 UI 的真实协议复测；
-- **已完成**：8 个历史回归和全部 74 个 CORE GATE；
-- **已完成**：只读账务对账、并发、故障回滚、历史日期 Dashboard 和 RabbitMQ 自动
-  恢复门禁；
-- **已完成**：三仓库发布分支与草稿 PR、API/Web 候选镜像和不可变 digest；生产候选
-  已部署到 `/opt/gaap` 的隔离端口，迁移、健康、消费者、依赖重启和空库对账通过。
-- **已完成**：Cloudflare DNS、Caddy HTTPS 与安全头恢复；真实 Turnstile 签发 token，
-  `windane@gmail.com` 白名单生产注册通过。执行跨过 2026-08-14 00:00，剩余生产 smoke
-  转入 8 月 14 日白天，不回填为 8 月 13 日完成。
-- **当时决策**：生产备份、独立恢复演练和每日备份任务本轮不执行，截至当时
-  保持 NO-GO；该决策已于 2026-08-14 12:15 CST 由发布负责人更新为正式豁免。
+- **Done**: DEF-019 fixed with a full protocol retest that bypasses the UI;
+- **Done**: the 8 historical regressions plus all 74 CORE GATE cases;
+- **Done**: read-only ledger reconciliation, concurrency, fault rollback, historical-date Dashboard and RabbitMQ auto-recovery gates;
+- **Done**: release branches and draft PRs for the three repos, API/Web candidate images with immutable digests; the production candidate was deployed on isolated ports under `/opt/gaap` — migrations, health checks, consumers, dependency restarts and empty-DB reconciliation all passed.
+- **Done**: Cloudflare DNS and Caddy HTTPS/security headers restored; real Turnstile issued tokens, and whitelisted production registration for `windane@gmail.com` passed. Execution crossed 2026-08-14 00:00; the remaining production smoke moved into the daytime of August 14 and is not back-dated as completed on August 13.
+- **Decision at that time**: production backups, an independent restore drill and daily backup jobs would not be run this round — status held at NO-GO until then; that decision was updated to a formal waiver by the release owner at 12:15 CST on 2026-08-14.
 
-### 8 月 14 日周五上午
+### Friday morning, August 14
 
-- **已完成**：开启橙云后绕过 Cloudflare 直连 `144.34.237.205`，请求直达源站、
-  TLS 证书、HTTP→HTTPS、Web/Caddy 路由、API ready 和安全响应头全部通过；
-- **已完成**：Cloudflare 历史 Origin Rule 曾将 `gaap.cc` 错误转发至 VPS `8081`
-  并触发 525；该规则已删除，公网登录页恢复后，生产重新注册、登录、四类账户、
-  收入/支出/转账、交易更新与删除、Dashboard、refresh 和 logout smoke 全部通过；
-- **已完成**：生产只读账务对账检查 6 个账户、4 笔交易，`passed=true`、
-  `differences=[]`、`issues=[]`；RabbitMQ 两队列各 1 个消费者、无积压；最终应用日志
-  无 ERROR/WARN/PANIC/FATAL 或 5xx；浏览器控制台无 error，新发现的图表尺寸和 Dialog
-  可访问性 warning 以及交易时间控件/日期协议不一致已登记为非阻断 DEF-025/026/027；
-- **已完成（逾期收尾）**：发布负责人于 2026-08-14 12:15 CST 确认最终 GO；
-  截至 12:22 CST，生产证据已更新，文档已提交并推送，PR 检查通过，根、API、Web
-  三个工作区已确认干净；
-- **已确认**：Caddyfile 权限已由发布负责人恢复，Cloudflare 橙云已开启且公网访问正常；
-- **WAIVED / ACCEPTED RISK**：发布前数据库备份、独立恢复演练和每日备份任务
-  不在本轮执行，且不再构成发布阻断。
+- **Done**: with orange cloud enabled and Cloudflare bypassed, direct connection to `144.34.237.205` confirmed requests reach the origin directly; TLS certificate, HTTP→HTTPS, Web/Caddy routing, API ready and security response headers all passed;
+- **Done**: a historical Cloudflare Origin Rule had mis-forwarded `gaap.cc` to VPS port `8081`, triggering 525s; after deleting the rule and restoring the public login page, production re-registration, login, four account types, income/expense/transfer, transaction update and delete, Dashboard, refresh and logout smoke all passed;
+- **Done**: the production read-only ledger reconciliation checked 6 accounts and 4 transactions with `passed=true`, `differences=[]` and `issues=[]`; both RabbitMQ queues have one consumer each with no backlog; final application logs show no ERROR/WARN/PANIC/FATAL or 5xx; browser console has no errors — newly found chart sizing and Dialog accessibility warnings plus the transaction time control/date protocol mismatch were recorded as non-blocking DEF-025/026/027;
+- **Done (overdue wrap-up)**: the release owner confirmed the final GO at 12:15 CST on 2026-08-14; by 12:22 CST, production evidence had been updated, docs committed and pushed, PR checks passed, and the root/API/Web workspaces were all confirmed clean;
+- **Confirmed**: Caddyfile permissions restored by the release owner; Cloudflare orange cloud enabled with normal public access;
+- **WAIVED / ACCEPTED RISK**: pre-release database backups, an independent restore drill and daily backup jobs are not executed this round and no longer block release.
 
-### 8 月 14 日周五下午
+### Friday afternoon, August 14
 
-- 部署 `gaap.cc`；
-- 执行公网注册、登录、账户、交易、Dashboard、refresh、logout、HTTPS 和容器重启
-  smoke；
-- smoke 全部通过后开放邮箱白名单；
-- 至少观察 2 小时：5xx、ALE、refresh 循环、RabbitMQ 连接与积压、数据库锁等待和
-  账务对账。
+- Deploy `gaap.cc`;
+- Run the public smoke for registration, login, accounts, transactions, Dashboard, refresh, logout, HTTPS and container restart;
+- Open the email whitelist once all smoke checks pass;
+- Observe for at least 2 hours: 5xx errors, ALE, refresh loops, RabbitMQ connections/backlog, database lock waits and ledger reconciliation.
 
-应用故障回滚上一不可变镜像；数据库故障先停止写流量并保留现场。由于本轮已豁免
-生产备份/恢复门禁，不承诺存在可用恢复点；禁止在已有新写入的数据库上盲目执行向下迁移。
+Application failure rolls back to the previous immutable image; a database failure first stops write traffic and preserves the scene. Because this round has waived the production backup/restore gate, no usable restore point is guaranteed; blind downward migrations on a database that already has new writes are forbidden.
 
-## 6. 当前 Go / No-Go
+## 6. Current Go / No-Go Decision
 
-发布负责人于 2026-08-14 12:15 CST 确认，并于 12:22 CST 完成文档推送与 PR 检查：
-**最终结论为 GO（邀请制 Beta）**。
+Confirmed by the release owner at 12:15 CST on 2026-08-14, with doc push and PR checks completed by 12:22 CST:
+**final conclusion is GO (invite-only Beta)**.
 
-本地 RC、VPS 容器、DNS/HTTPS、真实 Turnstile、源站直连、生产业务 smoke、RabbitMQ 复核、
-生产只读对账和最终应用日志扫描均通过。没有未关闭的 Beta P0/P1；DEF-025/026/027
-为已记录的非阻断 P2。
+Local RC, VPS containers, DNS/HTTPS, real Turnstile, origin direct connection, production business smoke, RabbitMQ re-check,
+production read-only reconciliation and the final application log scan all passed. No unresolved Beta P0/P1 remains; DEF-025/026/027 are documented non-blocking P2s.
 
-发布负责人明确将生产备份、独立恢复演练和每日备份从本轮 Beta 门禁移除，
-记为 **WAIVED / ACCEPTED RISK** 而非 PASS。此豁免不改变技术结果，但意味着数据库故障时
-无可验证生产恢复点，可能无法恢复最新业务数据。发布后继续执行至少 2 小时观察。
+The release owner explicitly removed production backups, an independent restore drill and daily backups from this round's Beta gate, recorded as **WAIVED / ACCEPTED RISK** rather than PASS. This waiver does not change the technical outcome but means a database failure has no verifiable production restore point, so recovering the latest business data may not be possible. At least 2 hours of post-release observation will continue.
 
-## 7. 候选产物记录
+## 7. Candidate Artifact Record
 
-- UAT 批次：`UAT-20260813-BETA-RC-01`（82/82 PASS）。
-- API 提交：`2a163356eca1b5edb6b66a87a467aadeddf37dcb`。
-- Web 提交：`6862ca2825b0b2da86760ada4a84507f46c47eaf`。
-- API 候选标签：
-  `ghcr.io/gin-melodic/gaap-api:beta-2026-08-14-2a163356eca1b5edb6b66a87a467aadeddf37dcb`。
-- Web 候选标签：
-  `ghcr.io/gin-melodic/gaap-web:beta-2026-08-14-6862ca2825b0b2da86760ada4a84507f46c47eaf`。
-- API digest：`sha256:7e7546fef26de2da228c13b9db4658dddc1cf439d6b93e1773dcfc3ac75e5be8`。
-- Web digest：`sha256:4c3ef686d0085c854695f2fb1ba74a7b06010e641a888c4f362ed32c7191e3fc`。
-- 根候选基础设施提交：`826b5cf46587554526710cc83f79b3045ac2f9b2`。
-- 草稿 PR：根仓库 [#2](https://github.com/gin-melodic/gaap/pull/2)、API
-  [#5](https://github.com/gin-melodic/gaap-api/pull/5)、Web
-  [#8](https://github.com/gin-melodic/gaap-web/pull/8)。
-- API/Web/根 CI：PASS。
-- GitHub Actions secrets 已登记 `BETA_ALE_BOOTSTRAP_KEY` 与
-  `BETA_TURNSTILE_SITE_KEY`；未在证据中记录 Secret 值。
-- VPS Compose 使用上述 `image@sha256:...`，未部署 `latest`；执行证据见
-  [`UAT-20260813-VPS-RC-01`](uat/runs/2026-08-13-vps-rc-01.md)。
+- UAT batch: `UAT-20260813-BETA-RC-01` (82/82 PASS).
+- API commit: `2a163356eca1b5edb6b66a87a467aadeddf37dcb`.
+- Web commit: `6862ca2825b0b2da86760ada4a84507f46c47eaf`.
+- API candidate tag:
+  `ghcr.io/gin-melodic/gaap-api:beta-2026-08-14-2a163356eca1b5edb6b66a87a467aadeddf37dcb`.
+- Web candidate tag:
+  `ghcr.io/gin-melodic/gaap-web:beta-2026-08-14-6862ca2825b0b2da86760ada4a84507f46c47eaf`.
+- API digest: `sha256:7e7546fef26de2da228c13b9db4658dddc1cf439d6b93e1773dcfc3ac75e5be8`.
+- Web digest: `sha256:4c3ef686d0085c854695f2fb1ba74a7b06010e641a888c4f362ed32c7191e3fc`.
+- Root candidate infrastructure commit: `826b5cf46587554526710cc83f79b3045ac2f9b2`.
+- Draft PRs: root repo [#2](https://github.com/gin-melodic/gaap/pull/2), API
+  [#5](https://github.com/gin-melodic/gaap-api/pull/5) and Web
+  [#8](https://github.com/gin-melodic/gaap-web/pull/8).
+- API/Web/root CI: PASS.
+- GitHub Actions secrets include `BETA_ALE_BOOTSTRAP_KEY` and `BETA_TURNSTILE_SITE_KEY`; secret values are not recorded in the evidence files.
+- VPS Compose uses the above `image@sha256:...` references; no `latest` was deployed — execution evidence is in
+  [`UAT-20260813-VPS-RC-01`](uat/runs/2026-08-13-vps-rc-01.md).

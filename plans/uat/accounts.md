@@ -1,295 +1,295 @@
-# 账户 UAT
+# Accounts UAT
 
-> 本文件只保留本次 Beta 范围内的用例；非 Beta 用例统一存放于 `deferred.md`。PASS 仅代表原 UAT 已通过，NOT RUN 表示尚未执行。
+> This file only keeps cases within this Beta's scope; non-Beta cases live in `deferred.md`. PASS means the case already passed under UAT, and NOT RUN means it has not been executed yet.
 
-2026-08-13 全量复测批次：[`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md)。
+2026-08-13 full retest batch: [`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md).
 
-## TC-ACCT-LIST-001 — 查询所有账户列表
+## TC-ACCT-LIST-001 — Query Full Account List
 
-- 模块：账户管理模块 / 账户列表查询
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在账户数据
-- 测试数据：无筛选条件
-- 预期结果：1. 返回所有账户列表
-2. 包含账户ID名称类型余额等信息
-3. 支持分页
+- Module: Account management module / Account list query
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and account data exists
+- Test data: no filter conditions
+- Expected result: 1. Returns the full account list
+  2. Includes account ID, name, type, balance, etc.
+  3. Supports pagination
 
-### 步骤
+### Steps
 
-1. 调用账户列表接口
-2. 不添加筛选条件
+1. Call the account list API
+2. Do not add any filter conditions
 
-## TC-ACCT-LIST-002 — 按账户类型筛选
+## TC-ACCT-LIST-002 — Filter by Account Type
 
-- 模块：账户管理模块 / 账户列表查询
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在不同类型的账户
-- 测试数据：账户类型: ASSET
-- 预期结果：只返回资产类型的账户
+- Module: Account management module / Account list query
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and accounts of different types exist
+- Test data: account type: ASSET
+- Expected result: only asset-type accounts are returned
 
-### 步骤
+### Steps
 
-1. 调用账户列表接口
-2. 指定账户类型筛选条件
+1. Call the account list API
+2. Specify an account-type filter condition
 
-## TC-ACCT-LIST-003 — 空账户列表
+## TC-ACCT-LIST-003 — Empty Account List
 
-- 模块：账户管理模块 / 账户列表查询
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录无账户数据
-- 测试数据：无
-- 预期结果：返回空列表不报错
+- Module: Account management module / Account list query
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in with no account data
+- Test data: none
+- Expected result: an empty list is returned without errors
 
-### 步骤
+### Steps
 
-1. 调用账户列表接口
+1. Call the account list API
 
-## TC-ACCT-CREATE-001 — 创建资产类型账户
+## TC-ACCT-CREATE-001 — Create an Asset Account
 
-- 模块：账户管理模块 / 创建账户
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：名称: 现金账户 类型: ASSET 初始余额: 1000.00 CNY 日期: 2026-01-01
-- 预期结果：1. 创建成功
-2. 返回账户ID
-3. 账户余额正确显示
+- Module: Account management module / Create account
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: name: Cash Account, type: ASSET, initial balance: 1000.00 CNY, date: 2026-01-01
+- Expected result: 1. Creation succeeds
+  2. The account ID is returned
+  3. The account balance displays correctly
 
-### 步骤
+### Steps
 
-1. 调用创建账户接口
-2. 填写账户信息
+1. Call the create-account API
+2. Fill in the account information
 
-## TC-ACCT-CREATE-002 — 创建负债类型账户
+## TC-ACCT-CREATE-002 — Create a Liability Account
 
-- 模块：账户管理模块 / 创建账户
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：名称: 信用卡 类型: LIABILITY 初始余额: -5000.00 CNY
-- 预期结果：1. 创建成功
-2. 负债余额正确显示为负数或正数（根据系统设计）
+- Module: Account management module / Create account
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: name: Credit Card, type: LIABILITY, initial balance: -5000.00 CNY
+- Expected result: 1. Creation succeeds
+  2. The liability balance displays correctly as negative or positive (depending on system design)
 
-### 步骤
+### Steps
 
-1. 调用创建账户接口
-2. 填写负债账户信息
+1. Call the create-account API
+2. Fill in the liability account information
 
-## TC-ACCT-CREATE-005 — 创建账户 - 缺少必填字段
+## TC-ACCT-CREATE-005 — Create Account - Missing Required Field
 
-- 模块：账户管理模块 / 创建账户
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：名称: 空 类型: ASSET
-- 预期结果：创建失败提示缺少必填字段
+- Module: Account management module / Create account
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: name: empty, type: ASSET
+- Expected result: creation fails with a "missing required field" message
 
-### 步骤
+### Steps
 
-1. 调用创建账户接口
-2. 不填写账户名称
+1. Call the create-account API
+2. Leave the account name unfilled
 
-## TC-ACCT-CREATE-006 — 创建账户 - 无效账户类型
-
-- 模块：账户管理模块 / 创建账户
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：名称: 测试账户 类型: 999
-- 预期结果：创建失败提示账户类型无效
+## TC-ACCT-CREATE-006 — Create Account - Invalid Account Type
+
+- Module: Account management module / Create account
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: name: Test Account, type: 999
+- Expected result: creation fails with an "invalid account type" message
 
-### 步骤
+### Steps
 
-1. 调用创建账户接口
-2. 指定无效的账户类型
+1. Call the create-account API
+2. Specify an invalid account type
 
-## TC-ACCT-CREATE-007 — 创建账户 - 零初始余额
+## TC-ACCT-CREATE-007 — Create Account - Zero Initial Balance
 
-- 模块：账户管理模块 / 创建账户
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：名称: 新账户 类型: ASSET 初始余额: 0
-- 预期结果：创建成功余额显示为0
+- Module: Account management module / Create account
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: name: New Account, type: ASSET, initial balance: 0
+- Expected result: creation succeeds and the balance displays as 0
 
-### 步骤
+### Steps
 
-1. 调用创建账户接口
-2. 设置初始余额为0
+1. Call the create-account API
+2. Set the initial balance to 0
 
-## TC-ACCT-CREATE-008 — 创建账户 - 负初始余额资产账户
+## TC-ACCT-CREATE-008 — Create Account - Negative Initial Balance for Asset Account
 
-- 模块：账户管理模块 / 创建账户
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：名称: 透支账户 类型: ASSET 初始余额: -100.00
-- 预期结果：根据系统设计可能创建成功或提示错误
+- Module: Account management module / Create account
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: name: Overdraft Account, type: ASSET, initial balance: -100.00
+- Expected result: depending on system design, creation may succeed or an error may be shown
 
-### 步骤
+### Steps
 
-1. 调用创建账户接口
-2. 资产账户设置负初始余额
+1. Call the create-account API
+2. Set a negative initial balance for the asset account
 
-## TC-ACCT-GET-001 — 获取存在的账户详情
+## TC-ACCT-GET-001 — Get Details of an Existing Account
 
-- 模块：账户管理模块 / 获取账户详情
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录账户存在
-- 测试数据：有效账户ID
-- 预期结果：1. 返回账户完整信息
-2. 包含ID名称类型余额创建时间等
+- Module: Account management module / Get account details
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the account exists
+- Test data: a valid account ID
+- Expected result: 1. Returns complete account information
+  2. Includes ID, name, type, balance, created time, etc.
 
-### 步骤
+### Steps
 
-1. 调用获取账户详情接口
-2. 传入有效账户ID
+1. Call the get-account-details API
+2. Pass in a valid account ID
 
-## TC-ACCT-GET-002 — 获取不存在的账户详情
+## TC-ACCT-GET-002 — Get Details of a Nonexistent Account
 
-- 模块：账户管理模块 / 获取账户详情
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：不存在的账户ID
-- 预期结果：返回错误提示账户不存在
+- Module: Account management module / Get account details
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: a nonexistent account ID
+- Expected result: an error is returned stating the account does not exist
 
-### 步骤
+### Steps
 
-1. 调用获取账户详情接口
-2. 传入不存在的账户ID
+1. Call the get-account-details API
+2. Pass in a nonexistent account ID
 
-## TC-ACCT-UPDATE-001 — 更新账户名称
+## TC-ACCT-UPDATE-001 — Update Account Name
 
-- 模块：账户管理模块 / 更新账户
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录账户存在
-- 测试数据：账户ID: 有效ID 新名称: 更新后的账户名
-- 预期结果：1. 更新成功
-2. 账户名称已变更
+- Module: Account management module / Update account
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the account exists
+- Test data: account ID: a valid ID, new name: Updated Account Name
+- Expected result: 1. The update succeeds
+  2. The account name has changed
 
-### 步骤
+### Steps
 
-1. 调用更新账户接口
-2. 修改账户名称
+1. Call the update-account API
+2. Change the account name
 
-## TC-ACCT-UPDATE-002 — 更新账户备注
+## TC-ACCT-UPDATE-002 — Update Account Note
 
-- 模块：账户管理模块 / 更新账户
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录账户存在
-- 测试数据：账户ID: 有效ID 备注: 这是备注内容
-- 预期结果：更新成功备注已添加/修改
+- Module: Account management module / Update account
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the account exists
+- Test data: account ID: a valid ID, note: This is the note content
+- Expected result: the update succeeds and the note has been added/modified
 
-### 步骤
+### Steps
 
-1. 调用更新账户接口
-2. 添加或修改备注
+1. Call the update-account API
+2. Add or modify the note
 
-## TC-ACCT-UPDATE-003 — 更新不存在的账户
+## TC-ACCT-UPDATE-003 — Update a Nonexistent Account
 
-- 模块：账户管理模块 / 更新账户
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：账户ID: 不存在的ID 名称: 新名称
-- 预期结果：更新失败提示账户不存在
+- Module: Account management module / Update account
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: account ID: a nonexistent ID, name: New Name
+- Expected result: the update fails with an "account does not exist" message
 
-### 步骤
+### Steps
 
-1. 调用更新账户接口
-2. 传入不存在的账户ID
+1. Call the update-account API
+2. Pass in a nonexistent account ID
 
-## TC-ACCT-DELETE-001 — 删除无交易的账户
+## TC-ACCT-DELETE-001 — Delete an Account With No Transactions
 
-- 模块：账户管理模块 / 删除账户
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录账户存在且无关联交易
-- 测试数据：无交易的账户ID
-- 预期结果：1. 删除成功
-2. 账户从列表中移除
+- Module: Account management module / Delete account
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the account exists with no linked transactions
+- Test data: the ID of an account with no transactions
+- Expected result: 1. Deletion succeeds
+  2. The account is removed from the list
 
-### 步骤
+### Steps
 
-1. 调用删除账户接口
-2. 传入账户ID
+1. Call the delete-account API
+2. Pass in the account ID
 
-## TC-ACCT-COUNT-001 — 获取账户交易数量
+## TC-ACCT-COUNT-001 — Get Account Transaction Count
 
-- 模块：账户管理模块 / 获取账户交易数量
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录账户存在且有交易
-- 测试数据：有效账户ID
-- 预期结果：返回该账户关联的交易数量
+- Module: Account management module / Get account transaction count
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the account exists with transactions
+- Test data: a valid account ID
+- Expected result: returns the number of linked transactions for this account
 
-### 步骤
+### Steps
 
-1. 调用获取交易数量接口
-2. 传入账户ID
+1. Call the get-transaction-count API
+2. Pass in the account ID
 
-## TC-ACCT-COUNT-002 — 获取无交易账户的交易数量
+## TC-ACCT-COUNT-002 — Get Transaction Count of an Account With No Transactions
 
-- 模块：账户管理模块 / 获取账户交易数量
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录账户存在但无交易
-- 测试数据：无交易的账户ID
-- 预期结果：返回交易数量为0
+- Module: Account management module / Get account transaction count
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and the account exists but has no transactions
+- Test data: the ID of an account with no transactions
+- Expected result: returns a transaction count of 0
 
-### 步骤
+### Steps
 
-1. 调用获取交易数量接口
-2. 传入无交易的账户ID
+1. Call the get-transaction-count API
+2. Pass in the ID of an account with no transactions
 
-## TC-EDGE-ACCT-001 — 超大余额金额
+## TC-EDGE-ACCT-001 — Extremely Large Balance Amount
 
-- 模块：边界条件与异常场景 / 账户边界测试
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：余额: 999999999999999999.99
-- 预期结果：根据系统精度可能成功或提示金额超限
+- Module: Boundary Conditions & Exception Scenarios / Account boundary tests
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: balance: 999999999999999999.99
+- Expected result: depending on system precision, it may succeed or show an amount-exceeded error
 
-### 步骤
+### Steps
 
-1. 创建账户时设置超大余额
+1. Set an extremely large balance when creating the account
 
-## TC-EDGE-ACCT-002 — 超长账户名称
+## TC-EDGE-ACCT-002 — Overly Long Account Name
 
-- 模块：边界条件与异常场景 / 账户边界测试
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：名称: 超过100字符的账户名
-- 预期结果：创建失败提示名称长度超限
+- Module: Boundary Conditions & Exception Scenarios / Account boundary tests
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: name: an account name of more than 100 characters
+- Expected result: creation fails with a "name length exceeded" message
 
-### 步骤
+### Steps
 
-1. 创建账户时输入超长名称
+1. Enter an overly long name when creating the account

@@ -1,169 +1,168 @@
-# 安全、完整性与并发 UAT
+# Security, Integrity & Concurrency UAT
 
-> 本文件只保留本次 Beta 范围内的用例；非 Beta 用例统一存放于 `deferred.md`。PASS 仅代表原 UAT 已通过，NOT RUN 表示尚未执行。
+> This file only keeps cases within this Beta's scope; non-Beta cases live in `deferred.md`. PASS means the case already passed under UAT, and NOT RUN means it has not been executed yet.
 
-2026-08-13 全量复测批次：[`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md)。
+2026-08-13 full retest batch: [`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md).
 
-## TC-EDGE-CONC-001 — 并发创建账户
+## TC-EDGE-CONC-001 — Concurrent Account Creation
 
-- 模块：边界条件与异常场景 / 并发与性能测试
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录
-- 测试数据：10个并发请求
-- 预期结果：所有请求正确处理无数据冲突
+- Module: Boundary Conditions & Exception Scenarios / Concurrency and performance tests
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in
+- Test data: 10 concurrent requests
+- Expected result: all requests are handled correctly with no data conflicts
 
-### 步骤
+### Steps
 
-1. 同时发起多个创建账户请求
+1. Issue multiple create-account requests at the same time
 
-## TC-EDGE-CONC-002 — 并发更新同一交易
+## TC-EDGE-CONC-002 — Concurrent Updates of the Same Transaction
 
-- 模块：边界条件与异常场景 / 并发与性能测试
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录交易存在
-- 测试数据：同一交易ID,不同更新内容
-- 预期结果：正确处理并发最终数据一致
+- Module: Boundary Conditions & Exception Scenarios / Concurrency and performance tests
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and a transaction exists
+- Test data: same transaction ID, different update contents
+- Expected result: concurrency handled correctly with final data consistency
 
-### 步骤
+### Steps
 
-1. 同时发起多个更新同一交易的请求
+1. Issue multiple concurrent requests updating the same transaction
 
-## TC-EDGE-CONC-003 — 并发登录
+## TC-EDGE-CONC-003 — Concurrent Logins
 
-- 模块：边界条件与异常场景 / 并发与性能测试
-- 优先级：P1
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已注册
-- 测试数据：同一账户,多个登录请求
-- 预期结果：根据系统设计可能允许多设备登录或限制
+- Module: Boundary Conditions & Exception Scenarios / Concurrency and performance tests
+- Priority: P1
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is registered
+- Test data: the same account with multiple login requests
+- Expected result: depending on system design, either multi-device logins are allowed or restricted
 
-### 步骤
+### Steps
 
-1. 同一账户同时从多个设备登录
+1. Log in to the same account simultaneously from multiple devices
 
-## TC-EDGE-SEC-001 — SQL注入测试
+## TC-EDGE-SEC-001 — SQL Injection Test
 
-- 模块：边界条件与异常场景 / 安全测试
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：系统正常运行
-- 测试数据：名称: ' OR '1'='1
-- 预期结果：系统正确过滤不执行SQL注入
+- Module: Boundary Conditions & Exception Scenarios / Security tests
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: system running normally
+- Test data: name: ' OR '1'='1
+- Expected result: the system filters correctly and no SQL injection is executed
 
-### 步骤
+### Steps
 
-1. 在输入字段中输入SQL注入语句
+1. Enter an SQL injection statement in an input field
 
-## TC-EDGE-SEC-002 — XSS攻击测试
+## TC-EDGE-SEC-002 — XSS Attack Test
 
-- 模块：边界条件与异常场景 / 安全测试
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：系统正常运行
-- 测试数据：备注: <script>alert('XSS')</script>
-- 预期结果：系统正确转义不执行脚本
+- Module: Boundary Conditions & Exception Scenarios / Security tests
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: system running normally
+- Test data: note: <script>alert('XSS')</script>
+- Expected result: the system escapes correctly and no script is executed
 
-### 步骤
+### Steps
 
-1. 在输入字段中输入XSS脚本
+1. Enter an XSS script in an input field
 
-## TC-EDGE-SEC-003 — 越权访问测试
+## TC-EDGE-SEC-003 — Authorization Bypass Test
 
-- 模块：边界条件与异常场景 / 安全测试
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：两个不同用户已登录；Beta 用户等级为 Free
-- 测试数据：用户A的令牌、用户B的资源ID；Free 用户直接提交 `is_group=true` 或
+- Module: Boundary Conditions & Exception Scenarios / Security tests
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: two different users are logged in; the Beta user tier is Free
+- Test data: user A's token and user B's resource IDs; a Free user directly submits `is_group=true` or
   `parent_id`
-- 预期结果：跨用户资源访问被拒绝；Free 用户不能绕过 UI 创建账户组或子账户，且不得
-  写入任何账户或期初余额交易
+- Expected result: cross-user resource access is rejected; a Free user cannot bypass the UI to create an account group or sub-account, nor write any account or opening-balance transaction
 
-### 步骤
+### Steps
 
-1. 用户A尝试访问用户B的账户或交易
-2. Free 用户绕过禁用的前端控件，直接调用创建账户接口并提交 `is_group=true`
-3. Free 用户直接调用创建账户接口并提交任意 `parent_id`
-4. 验证请求被拒绝，账户和交易表均无新增记录
+1. User A tries to access user B's accounts or transactions
+2. A Free user bypasses the disabled frontend controls and calls the create-account API directly with `is_group=true`
+3. A Free user calls the create-account API directly with an arbitrary `parent_id`
+4. Verify the requests are rejected and no new records appear in either the accounts or transactions tables
 
-## TC-EDGE-SEC-004 — 过期令牌访问
+## TC-EDGE-SEC-004 — Expired Token Access
 
-- 模块：边界条件与异常场景 / 安全测试
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户令牌已过期
-- 测试数据：过期的访问令牌
-- 预期结果：访问被拒绝提示令牌过期
+- Module: Boundary Conditions & Exception Scenarios / Security tests
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: the user's token has expired
+- Test data: an expired access token
+- Expected result: access is rejected with a "token expired" message
 
-### 步骤
+### Steps
 
-1. 使用过期令牌访问受保护资源
+1. Access a protected resource using the expired token
 
-## TC-EDGE-SEC-005 — 无效令牌访问
+## TC-EDGE-SEC-005 — Invalid Token Access
 
-- 模块：边界条件与异常场景 / 安全测试
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：无
-- 测试数据：随机字符串作为令牌
-- 预期结果：访问被拒绝提示令牌无效
+- Module: Boundary Conditions & Exception Scenarios / Security tests
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: none
+- Test data: a random string used as the token
+- Expected result: access is rejected with an "invalid token" message
 
-### 步骤
+### Steps
 
-1. 使用无效令牌访问受保护资源
+1. Access a protected resource using the invalid token
 
-## TC-EDGE-DATA-001 — 复式记账平衡验证
+## TC-EDGE-DATA-001 — Double-Entry Bookkeeping Balance Verification
 
-- 模块：边界条件与异常场景 / 数据完整性测试
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在多笔交易
-- 测试数据：无
-- 预期结果：资产=负债+权益
+- Module: Boundary Conditions & Exception Scenarios / Data integrity tests
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and multiple transactions exist
+- Test data: none
+- Expected result: assets = liabilities + equity
 
-### 步骤
+### Steps
 
-1. 验证所有账户余额总和
-2. 验证资产 = 负债 + 权益
+1. Verify the sum of all account balances
+2. Verify that assets = liabilities + equity
 
-## TC-EDGE-DATA-002 — 删除交易后余额一致性
+## TC-EDGE-DATA-002 — Balance Consistency After Transaction Deletion
 
-- 模块：边界条件与异常场景 / 数据完整性测试
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在交易
-- 测试数据：有效交易ID
-- 预期结果：余额正确回滚数据一致
+- Module: Boundary Conditions & Exception Scenarios / Data integrity tests
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and transactions exist
+- Test data: a valid transaction ID
+- Expected result: the balance rolls back correctly and data remains consistent
 
-### 步骤
+### Steps
 
-1. 记录删除前的账户余额
-2. 删除交易
-3. 验证账户余额正确回滚
+1. Record the account balances before deletion
+2. Delete the transaction
+3. Verify the account balances rolled back correctly
 
-## TC-EDGE-DATA-003 — 更新交易后余额一致性
+## TC-EDGE-DATA-003 — Balance Consistency After Transaction Update
 
-- 模块：边界条件与异常场景 / 数据完整性测试
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户已登录存在交易
-- 测试数据：有效交易ID,新金额
-- 预期结果：余额正确调整数据一致
+- Module: Boundary Conditions & Exception Scenarios / Data integrity tests
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: user is logged in and transactions exist
+- Test data: a valid transaction ID, a new amount
+- Expected result: the balance adjusts correctly and data remains consistent
 
-### 步骤
+### Steps
 
-1. 记录更新前的账户余额
-2. 更新交易金额
-3. 验证账户余额正确调整
+1. Record the account balances before the update
+2. Update the transaction amount
+3. Verify the account balances adjusted correctly

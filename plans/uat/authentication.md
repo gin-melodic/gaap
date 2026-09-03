@@ -1,323 +1,323 @@
-# 认证 UAT
-
-> 本文件只保留本次 Beta 范围内的用例；非 Beta 用例统一存放于 `deferred.md`。PASS 仅代表原 UAT 已通过，NOT RUN 表示尚未执行。
-
-2026-08-13 全量复测批次：[`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md)。
-
-## TC-AUTH-REG-001 — 正常用户注册
-
-- 模块：认证模块 / 用户注册
-- 优先级：P0
-- 执行状态：**PASS**
-- 执行批次：原 UAT（日期未记录）
-- 执行环境：原 UAT（具体环境未记录）
-- Beta 处置：**CORE REGRESSION**
-- 前置条件：系统正常运行用户未注册
-- 测试数据：邮箱: test@example.com 密码: Test@123456
-- 预期结果：1. 注册成功返回成功消息
-2. 返回访问令牌和刷新令牌
-3. 返回用户基本信息
-4. 返回ALE会话密钥
-
-### 步骤
-
-1. 访问注册页面
-2. 输入有效邮箱地址
-3. 输入符合要求的密码
-4. 完成人机验证
-5. 点击注册按钮
+# Authentication UAT
+
+> This file only keeps cases within this Beta's scope; non-Beta cases live in `deferred.md`. PASS means the case already passed under UAT, and NOT RUN means it has not been executed yet.
+
+2026-08-13 full retest batch: [`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md).
+
+## TC-AUTH-REG-001 — Normal User Registration
+
+- Module: Auth module / User registration
+- Priority: P0
+- Execution status: **PASS**
+- Execution batch: original UAT (date not recorded)
+- Execution environment: original UAT (specific environment not recorded)
+- Beta disposition: **CORE REGRESSION**
+- Preconditions: system running normally, user not registered
+- Test data: email: test@example.com, password: Test@123456
+- Expected result: 1. Registration succeeds and returns a success message
+  2. Returns an access token and a refresh token
+  3. Returns basic user information
+  4. Returns the ALE session key
+
+### Steps
+
+1. Visit the registration page
+2. Enter a valid email address
+3. Enter a password meeting the requirements
+4. Complete the human verification
+5. Click the register button
 
-## TC-AUTH-REG-002 — 重复邮箱注册
-
-- 模块：认证模块 / 用户注册
-- 优先级：P0
-- 执行状态：**PASS**
-- 执行批次：原 UAT（日期未记录）
-- 执行环境：原 UAT（具体环境未记录）
-- Beta 处置：**CORE REGRESSION**
-- 前置条件：系统中已存在邮箱 test@example.com 的用户
-- 测试数据：邮箱: test@example.com 密码: Test@123456
-- 预期结果：注册失败提示邮箱已被注册
-
-### 步骤
-
-1. 访问注册页面
-2. 输入已存在的邮箱地址
-3. 输入密码
-4. 点击注册按钮
-
-## TC-AUTH-REG-003 — 无效邮箱格式注册
-
-- 模块：认证模块 / 用户注册
-- 优先级：P1
-- 执行状态：**PASS**
-- 执行批次：原 UAT（日期未记录）
-- 执行环境：原 UAT（具体环境未记录）
-- Beta 处置：**CORE REGRESSION**
-- 前置条件：系统正常运行
-- 测试数据：邮箱: invalid-email 密码: Test@123456
-- 预期结果：注册失败提示邮箱格式无效
-
-### 步骤
-
-1. 访问注册页面
-2. 输入无效格式的邮箱
-3. 输入密码
-4. 点击注册按钮
-
-### 2026-08-12 自动化回归证据
-
-- 环境：本地 production-mode UAT Docker 栈，浏览器通过仅绑定回环地址的测试入口访问同一 Web/API 容器。
-- 结果：输入 `invalid-email` 后点击注册，浏览器邮箱约束阻止提交并提示地址缺少 `@`；**PASS**。
-
-## TC-AUTH-REG-004 — 弱密码注册
-
-- 模块：认证模块 / 用户注册
-- 优先级：P1
-- 执行状态：**PASS**
-- 执行批次：原 UAT（日期未记录）；2026-08-12 自动化回归失败后修复复测通过
-- 执行环境：本地 production-mode UAT Docker 栈
-- Beta 处置：**CORE REGRESSION**
-- 前置条件：系统正常运行
-- 测试数据：邮箱: test2@example.com 密码: 123456
-- 预期结果：注册失败提示密码强度不足
-
-### 步骤
-
-1. 访问注册页面
-2. 输入有效邮箱
-3. 输入弱密码
-4. 点击注册按钮
-
-### 2026-08-12 自动化回归证据
-
-- 输入 6 位密码后，两个密码框虽声明 `minLength=8`，但表单仍实际提交。
-- 页面只显示 `Registration failed, please try again later...`，未提示密码强度不足。
-- 结果：**FAIL**；DEF-013 重新打开。
-
-### 2026-08-12 修复复测证据
-
-- production-mode UAT 镜像中输入 6 位密码并点击注册，页面显示 `Password must contain between 8 and 100 characters`。
-- 未显示通用注册失败，页面未跳转，注册请求未进入服务端；密码框同时声明 `minLength=8`、`maxLength=100`。
-- 前后端均按 Unicode 字符数校验 8–100 字符；边界单元测试已覆盖 7、8、100、101 字符。
-- 结果：**PASS**；DEF-013 的失败项已修复。
-
-## TC-AUTH-REG-005 — 空字段注册
-
-- 模块：认证模块 / 用户注册
-- 优先级：P1
-- 执行状态：**PASS**
-- 执行批次：原 UAT（日期未记录）
-- 执行环境：原 UAT（具体环境未记录）
-- Beta 处置：**CORE REGRESSION**
-- 前置条件：系统正常运行
-- 测试数据：邮箱: 空 密码: Test@123456
-- 预期结果：注册失败提示必填字段不能为空
-
-### 步骤
-
-1. 访问注册页面
-2. 保持邮箱或密码为空
-3. 点击注册按钮
-
-### 2026-08-12 自动化回归证据
-
-- 将必填昵称清空后点击注册，浏览器阻止提交并提示 `Please fill out this field.`；**PASS**。
-
-## TC-AUTH-LOGIN-001 — 正常用户登录
-
-- 模块：认证模块 / 用户登录
-- 优先级：P0
-- 执行状态：**PASS**
-- 执行批次：原 UAT（日期未记录）
-- 执行环境：原 UAT（具体环境未记录）
-- Beta 处置：**CORE REGRESSION**
-- 前置条件：用户已注册账户状态正常
-- 测试数据：邮箱: test@example.com 密码: Test@123456
-- 预期结果：1. 登录成功
-2. 返回访问令牌和刷新令牌
-3. 返回用户信息
-4. 返回ALE会话密钥
-
-### 步骤
-
-1. 访问登录页面
-2. 输入正确的邮箱和密码
-3. 完成人机验证
-4. 点击登录按钮
-
-## TC-AUTH-LOGIN-002 — 错误密码登录
-
-- 模块：认证模块 / 用户登录
-- 优先级：P0
-- 执行状态：**PASS**
-- 执行批次：原 UAT（日期未记录）
-- 执行环境：原 UAT（具体环境未记录）
-- Beta 处置：**CORE REGRESSION**
-- 前置条件：用户已注册
-- 测试数据：邮箱: test@example.com 密码: WrongPassword
-- 预期结果：登录失败提示邮箱或密码错误
+## TC-AUTH-REG-002 — Duplicate Email Registration
+
+- Module: Auth module / User registration
+- Priority: P0
+- Execution status: **PASS**
+- Execution batch: original UAT (date not recorded)
+- Execution environment: original UAT (specific environment not recorded)
+- Beta disposition: **CORE REGRESSION**
+- Preconditions: a user with the email test@example.com already exists in the system
+- Test data: email: test@example.com, password: Test@123456
+- Expected result: registration fails with "email already registered"
+
+### Steps
+
+1. Visit the registration page
+2. Enter an existing email address
+3. Enter a password
+4. Click the register button
+
+## TC-AUTH-REG-003 — Invalid Email Format Registration
+
+- Module: Auth module / User registration
+- Priority: P1
+- Execution status: **PASS**
+- Execution batch: original UAT (date not recorded)
+- Execution environment: original UAT (specific environment not recorded)
+- Beta disposition: **CORE REGRESSION**
+- Preconditions: system running normally
+- Test data: email: invalid-email, password: Test@123456
+- Expected result: registration fails with "invalid email format"
+
+### Steps
+
+1. Visit the registration page
+2. Enter an email in an invalid format
+3. Enter a password
+4. Click the register button
+
+### 2026-08-12 automated regression evidence
+
+- Environment: local production-mode UAT Docker stack; the browser reached the same Web/API containers through a test entry point bound to loopback only.
+- Result: after entering `invalid-email` and clicking register, the browser email constraint blocked submission with a message that the address is missing an `@`; **PASS**.
+
+## TC-AUTH-REG-004 — Weak Password Registration
+
+- Module: Auth module / User registration
+- Priority: P1
+- Execution status: **PASS**
+- Execution batch: original UAT (date not recorded); 2026-08-12 automated regression failed, then the fix retest passed
+- Execution environment: local production-mode UAT Docker stack
+- Beta disposition: **CORE REGRESSION**
+- Preconditions: system running normally
+- Test data: email: test2@example.com, password: 123456
+- Expected result: registration fails with "password strength insufficient"
+
+### Steps
+
+1. Visit the registration page
+2. Enter a valid email
+3. Enter a weak password
+4. Click the register button
+
+### 2026-08-12 automated regression evidence
+
+- After entering a 6-character password, although both password fields declared `minLength=8`, the form was actually submitted.
+- The page only showed `Registration failed, please try again later...`; there was no insufficient-strength message.
+- Result: **FAIL**; DEF-013 reopened.
+
+### 2026-08-12 fix retest evidence
+
+- In the production-mode UAT image, entering a 6-character password and clicking register showed `Password must contain between 8 and 100 characters` on the page.
+- No generic registration failure was shown, no navigation occurred, and the registration request never reached the server; both password fields declared `minLength=8` and `maxLength=100`.
+- Both frontend and backend validate 8–100 characters by Unicode character count; boundary unit tests cover 7, 8, 100 and 101 characters.
+- Result: **PASS**; the DEF-013 failure was fixed.
+
+## TC-AUTH-REG-005 — Empty Field Registration
+
+- Module: Auth module / User registration
+- Priority: P1
+- Execution status: **PASS**
+- Execution batch: original UAT (date not recorded)
+- Execution environment: original UAT (specific environment not recorded)
+- Beta disposition: **CORE REGRESSION**
+- Preconditions: system running normally
+- Test data: email: empty, password: Test@123456
+- Expected result: registration fails with "required fields cannot be empty"
+
+### Steps
+
+1. Visit the registration page
+2. Leave the email or password empty
+3. Click the register button
+
+### 2026-08-12 automated regression evidence
+
+- After clearing the required nickname and clicking register, the browser blocked submission with `Please fill out this field.`; **PASS**.
+
+## TC-AUTH-LOGIN-001 — Normal User Login
+
+- Module: Auth module / User login
+- Priority: P0
+- Execution status: **PASS**
+- Execution batch: original UAT (date not recorded)
+- Execution environment: original UAT (specific environment not recorded)
+- Beta disposition: **CORE REGRESSION**
+- Preconditions: user is registered and the account status is normal
+- Test data: email: test@example.com, password: Test@123456
+- Expected result: 1. Login succeeds
+  2. Returns an access token and a refresh token
+  3. Returns user information
+  4. Returns the ALE session key
+
+### Steps
+
+1. Visit the login page
+2. Enter the correct email and password
+3. Complete the human verification
+4. Click the login button
+
+## TC-AUTH-LOGIN-002 — Wrong Password Login
+
+- Module: Auth module / User login
+- Priority: P0
+- Execution status: **PASS**
+- Execution batch: original UAT (date not recorded)
+- Execution environment: original UAT (specific environment not recorded)
+- Beta disposition: **CORE REGRESSION**
+- Preconditions: user is registered
+- Test data: email: test@example.com, password: WrongPassword
+- Expected result: login fails with "email or password incorrect"
 
-### 步骤
-
-1. 访问登录页面
-2. 输入正确的邮箱和错误密码
-3. 点击登录按钮
-
-## TC-AUTH-LOGIN-003 — 不存在的用户登录
-
-- 模块：认证模块 / 用户登录
-- 优先级：P0
-- 执行状态：**PASS**
-- 执行批次：原 UAT（日期未记录）
-- 执行环境：原 UAT（具体环境未记录）
-- Beta 处置：**CORE REGRESSION**
-- 前置条件：系统正常运行
-- 测试数据：邮箱: nonexistent@example.com 密码: Test@123456
-- 预期结果：登录失败提示邮箱或密码错误
+### Steps
+
+1. Visit the login page
+2. Enter the correct email and a wrong password
+3. Click the login button
+
+## TC-AUTH-LOGIN-003 — Login With Nonexistent User
+
+- Module: Auth module / User login
+- Priority: P0
+- Execution status: **PASS**
+- Execution batch: original UAT (date not recorded)
+- Execution environment: original UAT (specific environment not recorded)
+- Beta disposition: **CORE REGRESSION**
+- Preconditions: system running normally
+- Test data: email: nonexistent@example.com, password: Test@123456
+- Expected result: login fails with "email or password incorrect"
 
-### 步骤
+### Steps
 
-1. 访问登录页面
-2. 输入不存在的邮箱
-3. 点击登录按钮
+1. Visit the login page
+2. Enter a nonexistent email
+3. Click the login button
 
-## TC-AUTH-REFRESH-001 — 正常刷新访问令牌
+## TC-AUTH-REFRESH-001 — Normal Access Token Refresh
 
-- 模块：认证模块 / 刷新令牌
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：用户有有效的刷新令牌
-- 测试数据：有效的刷新令牌
-- 预期结果：1. 返回新的访问令牌
-2. 可能返回新的刷新令牌
+- Module: Auth module / Refresh token
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: the user has a valid refresh token
+- Test data: a valid refresh token
+- Expected result: 1. Returns a new access token
+  2. May return a new refresh token
 
-### 步骤
+### Steps
 
-1. 使用刷新令牌调用刷新接口
+1. Call the refresh endpoint using the refresh token
 
-## TC-AUTH-REFRESH-002 — 无效刷新令牌
+## TC-AUTH-REFRESH-002 — Invalid Refresh Token
 
-- 模块：认证模块 / 刷新令牌
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：无
-- 测试数据：无效的刷新令牌
-- 预期结果：刷新失败提示令牌无效需要重新登录
+- Module: Auth module / Refresh token
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: none
+- Test data: an invalid refresh token
+- Expected result: the refresh fails with "token is invalid, please log in again"
 
-### 步骤
+### Steps
 
-1. 使用无效的刷新令牌调用刷新接口
+1. Call the refresh endpoint using an invalid refresh token
 
-## TC-AUTH-REFRESH-003 — 过期刷新令牌
+## TC-AUTH-REFRESH-003 — Expired Refresh Token
 
-- 模块：认证模块 / 刷新令牌
-- 优先级：P0
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：刷新令牌已过期
-- 测试数据：过期的刷新令牌
-- 预期结果：刷新失败提示令牌已过期需要重新登录
+- Module: Auth module / Refresh token
+- Priority: P0
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: the refresh token has expired
+- Test data: an expired refresh token
+- Expected result: the refresh fails with "token is expired, please log in again"
 
-### 步骤
+### Steps
 
-1. 使用过期的刷新令牌调用刷新接口
+1. Call the refresh endpoint using the expired refresh token
 
-## TC-EDGE-AUTH-001 — 超长邮箱地址
+## TC-EDGE-AUTH-001 — Overly Long Email Address
 
-- 模块：边界条件与异常场景 / 认证边界测试
-- 优先级：P2
-- 执行状态：**PASS**
-- 执行批次：2026-08-12 自动化 UAT；同日修复复测通过
-- 执行环境：本地 production-mode UAT Docker 栈
-- Beta 处置：**CORE GATE**
-- 前置条件：系统正常运行
-- 测试数据：邮箱: a...a@example.com（超过255字符）
-- 预期结果：注册失败提示邮箱长度超限
+- Module: Boundary Conditions & Exception Scenarios / Auth boundary tests
+- Priority: P2
+- Execution status: **PASS**
+- Execution batch: 2026-08-12 automated UAT; fix retest passed the same day
+- Execution environment: local production-mode UAT Docker stack
+- Beta disposition: **CORE GATE**
+- Preconditions: system running normally
+- Test data: email: a...a@example.com (more than 255 characters)
+- Expected result: registration fails with "email length exceeded"
 
-### 步骤
+### Steps
 
-1. 输入超长邮箱地址进行注册
+1. Register with an overly long email address
 
-### 执行证据
+### Execution evidence
 
-- 输入总长 262 字符的邮箱；邮箱框未声明 `maxLength`，浏览器判定输入有效并实际提交表单。
-- 页面只显示 `Registration failed, please try again later...`，未提示邮箱长度超限。
-- 结果：**FAIL**；见 DEF-021。
+- Entered an email of total length 262 characters; the email field had no declared `maxLength`, so the browser considered it valid and actually submitted the form.
+- The page only showed `Registration failed, please try again later...`, with no email-length-exceeded message.
+- Result: **FAIL**; see DEF-021.
 
-### 2026-08-12 修复复测证据
+### 2026-08-12 fix retest evidence
 
-- production-mode UAT 镜像中输入总长 262 字符的邮箱并点击注册，页面显示 `Email address must not exceed 255 characters`。
-- 未显示通用注册失败，页面未跳转，注册请求未进入服务端；邮箱框同时声明 `maxLength=255`。
-- 服务端在邀请白名单判断前执行输入校验，超长邮箱返回明确的 400 校验错误；边界单元测试覆盖 255 与 256 字符。
-- 结果：**PASS**；DEF-021 已修复。
+- In the production-mode UAT image, entering an email of total length 262 characters and clicking register showed `Email address must not exceed 255 characters` on the page.
+- No generic registration failure was shown, no navigation occurred, and the registration request never reached the server; the email field also declared `maxLength=255`.
+- The server performs input validation before the invitation-whitelist check, returning a clear 400 validation error for overly long emails; boundary unit tests cover 255 and 256 characters.
+- Result: **PASS**; DEF-021 fixed.
 
-## TC-EDGE-AUTH-002 — 超长密码
+## TC-EDGE-AUTH-002 — Overly Long Password
 
-- 模块：边界条件与异常场景 / 认证边界测试
-- 优先级：P2
-- 执行状态：**PASS**
-- 执行批次：2026-08-12 自动化 UAT
-- 执行环境：本地 production-mode UAT Docker 栈
-- Beta 处置：**CORE GATE**
-- 前置条件：系统正常运行
-- 测试数据：密码: 超过100字符的密码
-- 预期结果：根据系统设计可能截断或拒绝
+- Module: Boundary Conditions & Exception Scenarios / Auth boundary tests
+- Priority: P2
+- Execution status: **PASS**
+- Execution batch: 2026-08-12 automated UAT
+- Execution environment: local production-mode UAT Docker stack
+- Beta disposition: **CORE GATE**
+- Preconditions: system running normally
+- Test data: password: a password of more than 100 characters
+- Expected result: depending on system design, it may be truncated or rejected
 
-### 步骤
+### Steps
 
-1. 输入超长密码进行注册
+1. Register with an overly long password
 
-### 2026-08-12 部分执行证据
+### 2026-08-12 partial execution evidence
 
-- 浏览器接受 101 字符密码；密码框 `maxLength=-1`、`minLength=8`，浏览器判定有效。
-- 最终注册会受邀请白名单、CAPTCHA 及创建测试账号副作用影响，本自动批次未提交；保持 **NOT RUN**。
+- The browser accepted a 101-character password; the password field had `maxLength=-1` and `minLength=8`, so the browser considered it valid.
+- A final registration would be affected by the invitation whitelist, CAPTCHA and test-account creation side effects, so this automated batch did not submit it; kept as **NOT RUN**.
 
-### 2026-08-12 完整执行证据
+### 2026-08-12 full execution evidence
 
-- 修复后的 production-mode UAT 镜像中，密码框声明 `minLength=8`、`maxLength=100`。
-- 通过受控输入写入 101 字符密码并点击注册，页面在 CAPTCHA 检查前显示 `Password must contain between 8 and 100 characters`。
-- 页面未跳转，未显示 CAPTCHA 或通用注册失败提示，浏览器控制台无错误或警告。
-- 结果：系统明确拒绝超长密码；**PASS**。
+- In the fixed production-mode UAT image, the password field declared `minLength=8` and `maxLength=100`.
+- A controlled input wrote a 101-character password and clicked register; before the CAPTCHA check the page showed `Password must contain between 8 and 100 characters`.
+- No navigation occurred, no CAPTCHA or generic registration failure was shown, and there were no errors or warnings in the browser console.
+- Result: the system clearly rejected the overly long password; **PASS**.
 
-## TC-EDGE-AUTH-003 — 特殊字符邮箱
+## TC-EDGE-AUTH-003 — Special Character Email
 
-- 模块：边界条件与异常场景 / 认证边界测试
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：系统正常运行
-- 测试数据：邮箱: test+special@example.com
-- 预期结果：根据系统设计可能接受或拒绝
+- Module: Boundary Conditions & Exception Scenarios / Auth boundary tests
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: system running normally
+- Test data: email: test+special@example.com
+- Expected result: depending on system design, it may be accepted or rejected
 
-### 步骤
+### Steps
 
-1. 输入包含特殊字符的邮箱进行注册
+1. Register with an email containing special characters
 
-### 2026-08-12 部分执行证据
+### 2026-08-12 partial execution evidence
 
-- 浏览器判定 `test+special@example.com` 格式有效。
-- 完整成功路径需要邀请白名单、CAPTCHA 并会创建测试账号，本自动批次未提交；保持 **NOT RUN**。
-- 2026-08-12 再次确认：UAT 已配置邀请白名单，但该公开测试邮箱不在其中；同时成功注册必须处理 CAPTCHA。保持 **NOT RUN**，待人工授权 CAPTCHA 或提供白名单测试账号。
+- The browser considered `test+special@example.com` a valid format.
+- A full success path requires the invitation whitelist and CAPTCHA and would create a test account, so this automated batch did not submit it; kept as **NOT RUN**.
+- Reconfirmed on 2026-08-12: UAT has an invitation whitelist configured but this public test email is not in it; also, a successful registration must pass the CAPTCHA. Kept as **NOT RUN**, pending manual CAPTCHA approval or a whitelisted test account.
 
-## TC-EDGE-AUTH-004 — Unicode字符密码
+## TC-EDGE-AUTH-004 — Unicode Character Password
 
-- 模块：边界条件与异常场景 / 认证边界测试
-- 优先级：P2
-- 执行状态：**PASS**
-- Beta 处置：**CORE GATE**
-- 前置条件：系统正常运行
-- 测试数据：密码: 密码测试12345（9 个 Unicode 字符）
-- 预期结果：注册成功密码正确存储
+- Module: Boundary Conditions & Exception Scenarios / Auth boundary tests
+- Priority: P2
+- Execution status: **PASS**
+- Beta disposition: **CORE GATE**
+- Preconditions: system running normally
+- Test data: password: 密码测试12345 (9 Unicode characters)
+- Expected result: registration succeeds and the password is stored correctly
 
-### 步骤
+### Steps
 
-1. 输入包含Unicode字符的密码进行注册
+1. Register with a password containing Unicode characters
 
-### 2026-08-12 部分执行证据
+### 2026-08-12 partial execution evidence
 
-- 浏览器接受 `密码测试123`；该测试值按字符计长度为 7，低于密码框声明的 `minLength=8`，但受控表单仍报告有效，与 TC-AUTH-REG-004 的弱密码现象一致。
-- 完整成功路径需要邀请白名单、CAPTCHA 并会创建测试账号，本自动批次未提交；保持 **NOT RUN**，并由 DEF-013 跟踪密码约束问题。
-- 原测试值 `密码测试123` 只有 7 个字符，与系统已确认的 8 字符最小规则冲突；已更正为 9 字符的 `密码测试12345`。成功注册仍需要白名单与 CAPTCHA，故保持 **NOT RUN**。
+- The browser accepted `密码测试123`; measured by character count this test value has length 7, below the declared `minLength=8` of the password field, yet the controlled form still reported it as valid — consistent with the weak-password behavior in TC-AUTH-REG-004.
+- A full success path requires the invitation whitelist and CAPTCHA and would create a test account, so this automated batch did not submit it; kept as **NOT RUN**, with the password-constraint issue tracked by DEF-013.
+- The original test value `密码测试123` is only 7 characters, conflicting with the confirmed 8-character minimum rule; corrected to the 9-character `密码测试12345`. A successful registration still requires the whitelist and CAPTCHA, so it remains **NOT RUN**.
