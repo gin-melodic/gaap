@@ -28,6 +28,7 @@ services:
     env_file:
       - .env.uat
     environment:
+      TZ: Asia/Shanghai
       GF_ENV: production
       GF_GCFG_FILE: config.prod.yaml
       POSTGRES_HOST: postgres
@@ -72,6 +73,7 @@ services:
         NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:?set NEXT_PUBLIC_TURNSTILE_SITE_KEY}
     restart: unless-stopped
     environment:
+      TZ: Asia/Shanghai
       NODE_ENV: production
       HOSTNAME: 0.0.0.0
       PORT: "3000"
