@@ -17,4 +17,4 @@ This file records the conclusions of manual UAT batches. Per-case status remains
 - Result: **82/82 Beta cases PASS, 0 FAIL, 0 NOT RUN**.
 - Method: real Chrome page flows, the real protobuf + ALE HTTPS protocol, raw ALE attack requests,
   Compose fault injection and PostgreSQL read-only reconciliation.
-- Full evidence: [`runs/2026-08-13-beta-rc-01.md`](runs/2026-08-13-beta-rc-01.md).
+- Full evidence (archived): [`runs/2026-08-13-beta-rc-01.md`](../archive/beta-2026-08-14/runs/2026-08-13-beta-rc-01.md).

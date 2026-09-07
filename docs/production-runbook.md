@@ -1,6 +1,6 @@
 # GAAP Invite-Only Beta Production Runbook
 
-Main release plan: `plans/release-beta-2026-08-14.md`.
+Main release plan (Beta round, archived): `plans/archive/beta-2026-08-14/release-beta-2026-08-14.md`.
 
 ## Release Prerequisites
 
@@ -69,6 +69,12 @@ docker compose --env-file .env.production -f docker-compose.production.yml \
 
 The command enables PostgreSQL `REPEATABLE READ, READ ONLY` before reading. Exit code `2` means a
 ledger discrepancy or integrity anomaly was found; the release must be blocked and the database preserved as-is — do not manually edit balances.
+Every API boot now runs this same read-only reconciliation automatically before serving traffic. In production a
+database error or any ledger discrepancy exits the process non-zero, so with `restart: unless-stopped` the container crash-loops until the
+ledger is fixed; outside production it logs at Error level and startup continues. To break a crash loop while investigating, set
+`GAAP_STARTUP_RECONCILIATION=warn` (log and continue) or `off` (skip without touching the database) in `.env.production` and restart.
+Reconciliation never repairs balances: stop writes and preserve the scene before any manual balance fix.
+
 
 ## Backup & Restore
 

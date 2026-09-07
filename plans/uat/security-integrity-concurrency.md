@@ -2,7 +2,7 @@
 
 > This file only keeps cases within this Beta's scope; non-Beta cases live in `deferred.md`. PASS means the case already passed under UAT, and NOT RUN means it has not been executed yet.
 
-2026-08-13 full retest batch: [`UAT-20260813-BETA-RC-01`](runs/2026-08-13-beta-rc-01.md).
+2026-08-13 full retest batch (archived): [`UAT-20260813-BETA-RC-01`](../archive/beta-2026-08-14/runs/2026-08-13-beta-rc-01.md).
 
 ## TC-EDGE-CONC-001 — Concurrent Account Creation
 

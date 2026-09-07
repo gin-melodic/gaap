@@ -26,6 +26,7 @@ services:
     env_file:
       - .env.production
     environment:
+      TZ: Asia/Shanghai
       GF_ENV: production
       GF_GCFG_FILE: config.prod.yaml
       POSTGRES_HOST: postgres
@@ -62,6 +63,7 @@ services:
     image: ${GAAP_WEB_IMAGE:?set GAAP_WEB_IMAGE to an immutable release tag}
     restart: unless-stopped
     environment:
+      TZ: Asia/Shanghai
       NODE_ENV: production
       HOSTNAME: 0.0.0.0
       PORT: "3000"
