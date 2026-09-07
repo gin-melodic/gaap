@@ -40,8 +40,3 @@ before the first `ResizeObserver` measurement, so every mount fires one warning.
 
 - Playwright mock on local UAT after the DEF-027 rebuild:
   `GAAP_UAT_BROWSER_GATE={"id":"BROWSER-DEF025-DASH-CHART","status":"PASS","detail":"surfaces=2, sizeWarnings=[]"}`.
-
-## Local UAT verification (2026-09-04)
-
-- Playwright mock on local UAT after the DEF-027 rebuild:
-  `GAAP_UAT_BROWSER_GATE={"id":"BROWSER-DEF025-DASH-CHART","status":"PASS","detail":"surfaces=2, sizeWarnings=[]"}`.

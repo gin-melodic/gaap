@@ -40,10 +40,3 @@ dialogs were missing them (verified by auditing all `DialogContent` usages).
   `GAAP_UAT_BROWSER_GATE={"id":"BROWSER-DEF026-ACCOUNTS-DIALOG","status":"PASS"}` and
   `GAAP_UAT_BROWSER_GATE={"id":"BROWSER-DEF026-TXN-DIALOG","status":"PASS"}` (see
   [`local-uat-verification.md`](local-uat-verification.md) for the full evidence lines).
-
-## Local UAT verification (2026-09-04)
-
-- Playwright mock on local UAT: both dialogs carry non-empty descriptions —
-  `GAAP_UAT_BROWSER_GATE={"id":"BROWSER-DEF026-ACCOUNTS-DIALOG","status":"PASS"}` and
-  `GAAP_UAT_BROWSER_GATE={"id":"BROWSER-DEF026-TXN-DIALOG","status":"PASS"}` (see
-  [`local-uat-verification.md`](local-uat-verification.md) for the full evidence lines).

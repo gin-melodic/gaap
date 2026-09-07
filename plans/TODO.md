@@ -1,14 +1,42 @@
 # GAAP TODO
 
-## Status (updated 2026-09-04)
+## Status (updated 2026-09-07)
 
 The invite-only Beta is **released**. The release owner gave the final GO at 12:15 CST on 2026-08-14; `gaap.cc` has been in
 production since then, deployed from exact-SHA candidate images (see
 [`archive/beta-2026-08-14/release-beta-2026-08-14.md`](archive/beta-2026-08-14/release-beta-2026-08-14.md) and the run evidence under [`archive/beta-2026-08-14/runs/`](archive/beta-2026-08-14/runs/)).
 The post-Beta maintenance round on 2026-09-03 closed DEF-025, DEF-026 and DEF-027 (records under
 [`release-beta-060903/`](release-beta-060903/)); only the waived backup gates remain open below. On 2026-09-04 the P2 fixes were re-verified end-to-end on a clean local UAT (P2 mock + p2-round all green, including an
-end-date boundary fix in `gaap-api`); security-gate/full-gate need one quiet-network re-run — see
+end-date boundary fix in `gaap-api`). That round also exposed and closed DEF-028 (trend UTC-day bucketing,
+see item 7); security-gate is now green and full-gate re-runs show only intermittent ALE envelope flakes — see
 [`release-beta-060903/local-uat-verification.md`](release-beta-060903/local-uat-verification.md).
+
+On 2026-09-07 the GitHub board ([`gin-melodic/projects/1`](https://github.com/users/gin-melodic/projects/1)) was re-synced with this
+file: DEF-025/026/027 were moved to Done, DEF-017 (#38) and DEF-028 (#39) were added as board cards, and the Ready sprint dates
+were rolled forward to a 2026-09-07 → 09-11 week. The board's forward roadmap names a **multi-currency extension** as the
+immediate next direction (see below); the 38 deferred UAT cases remain deferred behind it.
+
+## Next direction — Multi-currency (Beta extension, rolling weekly plan)
+
+The GitHub board is the forward roadmap of record; the 38 deferred cases below stay deferred while this round focuses on
+multi-currency.
+
+- **Beta (current direction)**: daily reference rates from `fawazahmed0/exchange-api`, manual rate overrides, multi-currency
+  standalone accounts, same-currency bookkeeping, and base-currency Dashboard valuation.
+- **Next**: cross-currency exchange transactions with source/destination amounts, an execution rate and FX gain/loss.
+- **Paid roadmap**: Twelve Data minute-level rates behind a provider abstraction.
+- **Operations**: lightweight Telegram alerts for the 2C2G VPS.
+
+### Sprint 2026-09-07 → 2026-09-11 (Ready on the board)
+
+| Day | Board | Work item |
+|---|---|---|
+| 09-07 | #25 | Multi-currency schema and exchange-rate provider foundation |
+| 09-07 | #30 | VPS resource and health alerts via Telegram |
+| 09-08 | #29 | Daily reference-rate sync and manual overrides |
+| 09-09 | #27 | Enable multi-currency standalone accounts and same-currency transactions |
+| 09-10 | #26 | Base-currency Dashboard valuation and completeness reporting |
+| 09-11 | #28 | Multi-currency UAT, reconciliation, and conditional release |
 
 ## Open — post-Beta follow-ups (non-blocking for this release)
 
@@ -31,15 +59,22 @@ end-date boundary fix in `gaap-api`); security-gate/full-gate need one quiet-net
    as a daily job on the VPS, verify retention (>= 7 days), run one independent restore drill with
    `scripts/production/restore-postgres.sh`, and record evidence in this file. Until then a database failure has no verifiable production
    restore point — stop writes and preserve the scene first (see `docs/production-runbook.md`).
-6. **Local UAT regression re-run (2026-09-04)**: security-gate (7/7) and full-gate (best 62/69, FAILs all envelope-level:
-   ALE `Unable to verify secure API response` / cascaded session / CONC `fetch failed`) were blocked by Docker Desktop VM network
-   flake; no assertion failure touches dates or formatting. Re-run both after a fresh reset in a quiet window and append the
-   evidence to [`release-beta-060903/local-uat-verification.md`](release-beta-060903/local-uat-verification.md).
+6. **Local UAT regression re-run (2026-09-04)**: security-gate now passes 7/7 on local UAT; full-gate re-runs reach
+   78 PASS / 6 FAIL with every failure envelope-level (ALE `Unable to verify secure API response` + cascaded session loss;
+   no date/formatting assertion fails, trend gates green). One quiet-network window still needed for a fully clean run;
+   append the final evidence to [`release-beta-060903/local-uat-verification.md`](release-beta-060903/local-uat-verification.md).
 
-## Next release scope — 38 DEFERRED cases
+7. **DEF-028 / P2 — RESOLVED (2026-09-04)**: Dashboard Balance Trend never re-converged after editing a transaction's
+   date — transactions were bucketed by UTC calendar day while the walk uses server-local (+08) days, so an edit from
+   2026-08-08 to 2026-08-09 left the trend permanently stale. Fixed with zone-aware bucketing in
+   `calculateBalanceTrend` plus a regression unit test; end-to-end verified on local UAT (converges on first read after
+   each create/edit/delete). Same round pinned `dlv@v1.23.1` in `gaap-api/Dockerfile` (unrelated latent build breakage,
+   see [`release-beta-060903/def-028-trend-local-calendar-bucketing.md`](release-beta-060903/def-028-trend-local-calendar-bucketing.md)).
 
-All deferred test cases remain NOT RUN / DEFERRED and live exclusively in [`uat/deferred.md`](uat/deferred.md). When planning the round
-after Beta, they map to these feature workstreams:
+## Deferred scope — 38 DEFERRED cases (behind the multi-currency round)
+
+These 38 cases remain NOT RUN / DEFERRED and stay behind the multi-currency round above. They live exclusively in
+[`uat/deferred.md`](uat/deferred.md) and map to these feature workstreams when planning a future round:
 
 - Authentication & 2FA (7 cases): TOTP setup/enabling at login; password change.
 - Accounts (6 cases): Pro account groups and sub-accounts, multi-level nested accounts, migration-delete for accounts that have transactions.

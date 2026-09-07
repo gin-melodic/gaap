@@ -66,14 +66,3 @@ wall-clock time. The loss happened purely in response serialization:
 - Playwright mock: `GAAP_UAT_BROWSER_GATE={"id":"BROWSER-DEF027-TXN-SECONDS","status":"PASS",
   "detail":"list displays wall-clock time with seconds (p2-browser-def027)"}` with
   `[resp] 200 /api/v1/transaction/create-transaction` and toast `Transaction created successfully`.
-
-## Local UAT verification (2026-09-04)
-
-- Follow-up boundary fix landed in `gaap-api/internal/logic/transaction/transaction.go`: a plain calendar end date is now an
-  exclusive next-midnight predicate (`endDateFilter`, unit-tested in
-  `internal/logic/transaction/end_date_filter_test.go`), so end-of-day rows inside the filter window are no longer dropped.
-- `src/uat/p2-round.test.ts`: **1 passed** — RFC3339 list round-trip, `2026-09-03 23:59:59` precision, and the
-  `[2026-09-01, 2026-09-04]` window returning all 4 fixtures including the end-date-day midday row.
-- Playwright mock: `GAAP_UAT_BROWSER_GATE={"id":"BROWSER-DEF027-TXN-SECONDS","status":"PASS",
-  "detail":"list displays wall-clock time with seconds (p2-browser-def027)"}` with
-  `[resp] 200 /api/v1/transaction/create-transaction` and toast `Transaction created successfully`.

@@ -53,3 +53,32 @@ GAAP_UAT_BROWSER_GATE={"id":"BROWSER-DEF027-TXN-SECONDS","status":"PASS","detail
 - Dev stack left untouched; its image will pick up the fixes on next `docker compose build`.
 - Scratch probes (`uat-dump-rows.tmp.mjs`, `uat-list-probe.tmp.mjs`, `uat-confirm-probe.tmp.mjs`) removed after use.
   Repo remains uncommitted per local-UAT workflow.
+
+## Re-run 2026-09-04 (DEF-028 fix, post-rebuild)
+
+Context: while re-verifying the P2 round, an end-to-end trend lifecycle probe on local UAT exposed DEF-028 —
+`calculateBalanceTrend` bucketed transactions by UTC calendar day instead of the server-local (+08) day, so a
+transaction edited from 2026-08-08 to 2026-08-09 never re-converged in the trend series. Fixed with a one-line
+zone-aware bucketing change plus regression unit test (see [`def-028-trend-local-calendar-bucketing.md`](def-028-trend-local-calendar-bucketing.md)).
+
+Environment prep for this round: UAT `gaap-api` rebuilt with the fix. The rebuild surfaced two environment
+issues, both worked around without repo changes except pinning `dlv@v1.23.1` in `gaap-api/Dockerfile` (dlv v1.27.x
+requires Go >= 1.25 and broke every build): Docker Hub IPv6 resets to `auth.docker.io` during BuildKit frontend
+fetch, and corrupted alpine CDN package downloads inside the builder (rebuilt via classic builder with an Aliyun
+apk mirror copy of the Dockerfile). UAT user passwords for A/B were reset directly in Postgres (bcrypt) since the
+stack had been freshly re-provisioned.
+
+- `security-gate.test.ts` (`RUN_GAAP_UAT_SECURITY=1`, user A): **7/7 PASS**, exit 0 — first green run after the
+  earlier envelope-blocked window.
+- `full-gate.test.ts`: two consecutive runs, both **78 unique gates PASS / 6 FAIL**. The same six gates failed in
+  both runs and all failures are envelope-level: TC-AUTH-REG-001, TC-EDGE-AUTH-003/004, TC-ACCT-LIST-003
+  (`Unable to verify secure API response`) plus cascaded session losses (TC-DASH-SUMMARY-002, TC-EDGE-SEC-003,
+  `accessToken` undefined). **No date/formatting/filter assertion failed.** Notably `TC-DASH-TREND-001`,
+  `TC-DASH-SUMMARY-001`, `TC-DASH-MONTHLY-001` and every transaction/account/concurrency gate passed.
+- Targeted trend lifecycle probe (create 2026-08-08 → edit to 2026-08-09 → delete) on the fixed build converged on
+  the first read after each mutation: baseline 100 → 97 from 08-08 → **100 for 08-08 / 97 for 08-09** → back to 100.
+  Pre-fix this sequence never re-converged after the edit.
+
+Remaining: a fully clean full-gate (0 envelope flakes) still needs a quieter network window; the four flaky gates
+fail intermittently on ALE response verification through the local Caddy path and reproduce independently of today's
+changes.
