@@ -38,6 +38,39 @@ multi-currency.
 | 09-10 | #26 | Base-currency Dashboard valuation and completeness reporting |
 | 09-11 | #28 | Multi-currency UAT, reconciliation, and conditional release |
 
+### Implementation status (2026-09-07)
+
+The Beta multi-currency extension is implemented in `gaap-api` and `gaap-web`, reusing the previously scaffolded
+(and then restricted to base-currency) code paths and re-connecting them:
+
+- **#25 schema + provider foundation**: new `exchange_rates` table (anchor-relative, `reference`/`manual` source) via
+  `manifest/sql/20260907_create_exchange_rates.sql`; DAO/entity/do regenerated (`gf gen dao`); a provider abstraction
+  (`internal/logic/exchangerate/provider.go`) with a `fawazahmed0/currency-api` implementation.
+- **#29 daily reference-rate sync + manual overrides**: `internal/logic/exchangerate` (service `ExchangeRate`) with
+  `SyncOnce`/`StartScheduler` (daily ticker, started in `cmd.go`), `SetManualRate` (manual override, never overwritten
+  by syncs), and `Convert`/`MissingCurrencies` valuation helpers. New `ConfigService.GetExchangeRates`/`SetExchangeRate`
+  RPCs (decimal-rate-as-string) with controller implementations.
+- **#27 multi-currency standalone accounts + same-currency transactions**: `account/validation.go` now accepts any
+  supported currency (defaulting to the user base when empty) instead of forcing base-only; `transaction/validation.go`
+  validates the currency is supported while keeping the same-currency invariant. `config` currency add/delete fixed to
+  use DAO columns, add is validated/uppercased, delete is blocked while accounts still reference it, and add/delete are
+  unblocked in production (`beta_scope.go`).
+- **#26 base-currency valuation + completeness**: dashboard summary/monthly now bucket per currency and convert to the
+  user's base currency with exact `shopspring/decimal` math, reporting missing rates (`missing_currencies` in the proto).
+  Frontend `Dashboard` converts with `decimal.js` (`convertAmount`) and shows a localized missing-rate warning; settings
+  `CurrencySettings` is wired to TanStack Query hooks (`useExchangeRates`/`useAddCurrency`/`useDeleteCurrency`/
+  `useSetExchangeRate`), the account currency selector is enabled, and i18n strings were added in en/ja/zh-CN/zh-TW.
+
+Verification: `go test ./...` green (including new `exchangerate` boundary tests); `npx tsc --noEmit`, `npm run lint`
+and `npx vitest run` (101 passed) green. The local UAT stack was rebuilt and the multi-currency UI round was executed
+with a Playwright browser mock (`gaap-web/scripts/local-uat-multicurrency-browser.mjs`) against the demo user from
+`.env.uat`: 6/6 gates PASS (demo login, exchange-rate display, manual override, USD standalone account, base-currency
+dashboard valuation `¥720.00`) with zero console errors, followed by a clean read-only reconciliation (80 accounts,
+36 transactions, 0 differences, 0 issues). See [`uat/multicurrency-browser-runs.md`](uat/multicurrency-browser-runs.md).
+The `CurrencySettings` view was also wired back into the settings navigation (`Settings.tsx` + `MainSettings.tsx`),
+which had been left unreachable. Remaining for this round: the release-owner conditional release call. Board #30
+(Telegram VPS alerts) remains a separate ops item.
+
 ## Open — post-Beta follow-ups (non-blocking for this release)
 
 1. **DEF-025 / P2 — RESOLVED (2026-09-03)**: Dashboard chart containers briefly emitted `width(-1)` / `height(-1)` console warnings on
