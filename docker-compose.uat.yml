@@ -59,6 +59,11 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # Persistent per-day access/app logs (DEF-032b). The api_logs volume is
+    # seeded from the image's gaap-owned /app/logs so it stays writable under
+    # read_only + non-root.
+    volumes:
+      - api_logs:/app/logs
     networks:
       - edge
       - data
@@ -156,3 +161,4 @@ volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
+  api_logs:

@@ -26,5 +26,8 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Local UAT browser scratch (Playwright CDP profile + probe scripts)
+.tmp-uat/
 *.crt
 .aider*
