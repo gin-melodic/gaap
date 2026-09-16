@@ -1,616 +1,616 @@
-# GAAP Beta 延期测试用例
-
-本文件集中保存所有不属于 2026-08-14 邀请制 Beta 范围的测试用例。用例均保持
-`NOT RUN / DEFERRED`，不得计入本次发布通过率，也不得在原模块 Beta 用例文档中重复。
-
-延期范围：2FA、Pro 账户组与子账户、账户迁移删除、多层嵌套账户、货币和主题管理、
-用户资料变更、数据导入导出及任务中心。
-
-- 延期用例总数：38
-- 认证与 2FA：7
-- 账户：6
-- Dashboard、配置与用户：10
-- 数据与任务：15
-
-## 认证
-
-### TC-AUTH-LOGIN-004 — 启用2FA后的登录 - 无验证码
-
-- 模块：认证模块 / 用户登录
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已启用双因素认证
-- 测试数据：邮箱: 2fauser@example.com 密码: Test@123456 验证码: 空
-- 预期结果：登录失败提示需要双因素认证验证码
-
-#### 步骤
-
-1. 访问登录页面
-2. 输入正确的邮箱和密码
-3. 不输入2FA验证码
-4. 点击登录按钮
-
-### TC-AUTH-LOGIN-005 — 启用2FA后的登录 - 正确验证码
-
-- 模块：认证模块 / 用户登录
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已启用双因素认证
-- 测试数据：邮箱: 2fauser@example.com 密码: Test@123456 验证码: 正确的TOTP码
-- 预期结果：登录成功返回令牌和用户信息
-
-#### 步骤
-
-1. 访问登录页面
-2. 输入正确的邮箱和密码
-3. 输入正确的2FA验证码
-4. 点击登录按钮
-
-### TC-AUTH-LOGIN-006 — 启用2FA后的登录 - 错误验证码
-
-- 模块：认证模块 / 用户登录
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已启用双因素认证
-- 测试数据：邮箱: 2fauser@example.com 密码: Test@123456 验证码: 000000
-- 预期结果：登录失败提示验证码错误
-
-#### 步骤
-
-1. 访问登录页面
-2. 输入正确的邮箱和密码
-3. 输入错误的2FA验证码
-4. 点击登录按钮
-
-### TC-AUTH-2FA-001 — 生成2FA密钥
-
-- 模块：认证模块 / 双因素认证管理
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录未启用2FA
-- 测试数据：有效访问令牌
-- 预期结果：1. 返回2FA密钥
-2. 返回二维码URL或Base64图片
-3. 返回备用恢复码
-- 计算/验证：跳过2FA
-
-#### 步骤
-
-1. 进入安全设置页面
-2. 点击启用2FA
-3. 调用生成2FA密钥接口
-
-### TC-AUTH-2FA-002 — 启用2FA - 正确验证码
-
-- 模块：认证模块 / 双因素认证管理
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已生成2FA密钥
-- 测试数据：正确的TOTP验证码
-- 预期结果：2FA启用成功
-- 计算/验证：跳过2FA
-
-#### 步骤
-
-1. 使用认证器APP扫描二维码
-2. 输入当前TOTP验证码
-3. 点击确认启用
-
-### TC-AUTH-2FA-003 — 启用2FA - 错误验证码
+# GAAP Beta Deferred Test Cases
+
+This file centrally stores all test cases that do not belong to the scope of the 2026-08-14 invite-only Beta. All cases remain
+`NOT RUN / DEFERRED`; they must not be counted toward this release's pass rate, and they must not be duplicated in the original module's Beta case documents.
+
+Deferred scope: 2FA, Pro account groups & sub-accounts, account migration delete, multi-level nested accounts, currency and theme management,
+user profile changes, data import/export, and the task center.
+
+- Total deferred cases: 38
+- Authentication & 2FA: 7
+- Accounts: 6
+- Dashboard, Settings & User: 10
+- Data & Tasks: 15
+
+## Authentication
+
+### TC-AUTH-LOGIN-004 — Login With 2FA Enabled - No Verification Code
+
+- Module: Auth module / User login
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: the user has two-factor authentication enabled
+- Test data: email: 2fauser@example.com, password: Test@123456, verification code: empty
+- Expected result: login fails with a message that a 2FA verification code is required
+
+#### Steps
+
+1. Visit the login page
+2. Enter the correct email and password
+3. Leave the 2FA code empty
+4. Click the login button
+
+### TC-AUTH-LOGIN-005 — Login With 2FA Enabled - Correct Code
+
+- Module: Auth module / User login
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: the user has two-factor authentication enabled
+- Test data: email: 2fauser@example.com, password: Test@123456, verification code: a correct TOTP code
+- Expected result: login succeeds and returns tokens plus user information
+
+#### Steps
+
+1. Visit the login page
+2. Enter the correct email and password
+3. Enter a correct 2FA code
+4. Click the login button
+
+### TC-AUTH-LOGIN-006 — Login With 2FA Enabled - Wrong Code
+
+- Module: Auth module / User login
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: the user has two-factor authentication enabled
+- Test data: email: 2fauser@example.com, password: Test@123456, verification code: 000000
+- Expected result: login fails with a wrong-verification-code message
+
+#### Steps
+
+1. Visit the login page
+2. Enter the correct email and password
+3. Enter a wrong 2FA code
+4. Click the login button
+
+### TC-AUTH-2FA-001 — Generate 2FA Secret
+
+- Module: Auth module / Two-factor authentication management
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and 2FA is not enabled
+- Test data: a valid access token
+- Expected result: 1. Returns the 2FA secret key
+  2. Returns a QR code URL or Base64 image
+  3. Returns backup recovery codes
+- Calculation/verification: 2FA skipped
+
+#### Steps
+
+1. Open the security settings page
+2. Click enable 2FA
+3. Call the generate-2FA-secret API
+
+### TC-AUTH-2FA-002 — Enable 2FA - Correct Code
+
+- Module: Auth module / Two-factor authentication management
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: the user has generated a 2FA secret
+- Test data: a correct TOTP code
+- Expected result: 2FA is enabled successfully
+- Calculation/verification: 2FA skipped
+
+#### Steps
+
+1. Scan the QR code with an authenticator app
+2. Enter the current TOTP code
+3. Click confirm to enable
+
+### TC-AUTH-2FA-003 — Enable 2FA - Wrong Code
 
-- 模块：认证模块 / 双因素认证管理
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已生成2FA密钥
-- 测试数据：错误的TOTP验证码
-- 预期结果：启用失败提示验证码错误
-- 计算/验证：跳过2FA
-
-#### 步骤
+- Module: Auth module / Two-factor authentication management
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: the user has generated a 2FA secret
+- Test data: a wrong TOTP code
+- Expected result: enabling fails with a wrong-verification-code message
+- Calculation/verification: 2FA skipped
+
+#### Steps
 
-1. 输入错误的TOTP验证码
-2. 点击确认启用
+1. Enter a wrong TOTP code
+2. Click confirm to enable
 
-### TC-AUTH-2FA-004 — 禁用2FA - 已登录用户
+### TC-AUTH-2FA-004 — Disable 2FA - Logged-in User
 
-- 模块：认证模块 / 双因素认证管理
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录且已启用2FA
-- 测试数据：正确的TOTP验证码
-- 预期结果：2FA禁用成功
-- 计算/验证：跳过2FA
-
-#### 步骤
+- Module: Auth module / Two-factor authentication management
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and 2FA is enabled
+- Test data: a correct TOTP code
+- Expected result: 2FA is disabled successfully
+- Calculation/verification: 2FA skipped
+
+#### Steps
 
-1. 进入安全设置页面
-2. 点击禁用2FA
-3. 输入当前TOTP验证码确认
+1. Open the security settings page
+2. Click disable 2FA
+3. Enter the current TOTP code to confirm
 
-## 账户
+## Accounts
 
-### TC-ACCT-CREATE-003 — 创建账户组
+### TC-ACCT-CREATE-003 — Create an Account Group
 
-- 模块：账户管理模块 / 创建账户
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 延期原因：账户组是 Pro 功能，本次 Beta 不提供 Pro 用户，正常产品路径不可达。
-- 前置条件：用户已登录且为 Pro 用户
-- 测试数据：名称: 银行账户 类型: ASSET 是否为组: true
-- 预期结果：1. 创建成功
-2. 账户组可用于包含子账户
+- Module: Account management module / Create account
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Deferral reason: account groups are a Pro feature; this Beta does not provide Pro users, so the normal product path is unreachable.
+- Preconditions: user is logged in and is a Pro user
+- Test data: name: Bank Accounts, type: ASSET, is group: true
+- Expected result: 1. Creation succeeds
+  2. The account group can hold sub-accounts
 
-#### 步骤
+#### Steps
 
-1. 调用创建账户接口
-2. 设置为账户组
+1. Call the create-account API
+2. Set it as an account group
 
-### TC-ACCT-CREATE-004 — 创建子账户
+### TC-ACCT-CREATE-004 — Create a Sub-Account
 
-- 模块：账户管理模块 / 创建账户
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 延期原因：子账户依赖 Pro 账户组，本次 Beta 不提供 Pro 用户。
-- 前置条件：Pro 用户已登录且存在父账户组
-- 测试数据：名称: 工商银行 类型: ASSET 父账户ID: 父账户组ID
-- 预期结果：1. 创建成功
-2. 子账户正确关联到父账户组
+- Module: Account management module / Create account
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Deferral reason: sub-accounts depend on Pro account groups; this Beta does not provide Pro users.
+- Preconditions: a Pro user is logged in and a parent group exists
+- Test data: name: ICBC, type: ASSET, parent account ID: the parent group's ID
+- Expected result: 1. Creation succeeds
+  2. The sub-account is correctly linked to the parent group
 
-#### 步骤
+#### Steps
 
-1. 调用创建账户接口
-2. 指定父账户ID
+1. Call the create-account API
+2. Specify a parent account ID
 
-### TC-ACCT-DELETE-002 — 删除有交易的账户 - 无迁移
+### TC-ACCT-DELETE-002 — Delete an Account With Transactions - No Migration
 
-- 模块：账户管理模块 / 删除账户
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录账户存在且有关联交易
-- 测试数据：有交易的账户ID 迁移目标: 无
-- 预期结果：根据系统设计可能拒绝删除或删除账户及关联交易
+- Module: Account management module / Delete account
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the account exists with linked transactions
+- Test data: the ID of an account with transactions, migration target: none
+- Expected result: depending on system design, deletion may be rejected or the account plus its linked transactions may be deleted
 
-#### 步骤
+#### Steps
 
-1. 调用删除账户接口
-2. 不指定迁移目标账户
+1. Call the delete-account API
+2. Do not specify a migration target account
 
-### TC-ACCT-DELETE-003 — 删除有交易的账户 - 迁移到其他账户
+### TC-ACCT-DELETE-003 — Delete an Account With Transactions - Migrate to Another Account
 
-- 模块：账户管理模块 / 删除账户
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录账户存在且有关联交易存在目标账户
-- 测试数据：有交易的账户ID 迁移目标: 另一个有效账户ID
-- 预期结果：1. 删除成功
-2. 原账户的交易迁移到目标账户
+- Module: Account management module / Delete account
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in, the account exists with linked transactions, and a target account exists
+- Test data: the ID of an account with transactions, migration target: another valid account ID
+- Expected result: 1. Deletion succeeds
+  2. The original account's transactions are migrated to the target account
 
-#### 步骤
+#### Steps
 
-1. 调用删除账户接口
-2. 指定迁移目标账户
+1. Call the delete-account API
+2. Specify a migration target account
 
-### TC-ACCT-DELETE-004 — 删除账户组 - 有子账户
+### TC-ACCT-DELETE-004 — Delete an Account Group - With Sub-Accounts
 
-- 模块：账户管理模块 / 删除账户
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录账户组存在且有子账户
-- 测试数据：有子账户的账户组ID
-- 预期结果：根据系统设计可能拒绝删除或级联删除子账户
+- Module: Account management module / Delete account
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the account group exists with sub-accounts
+- Test data: the ID of an account group with sub-accounts
+- Expected result: depending on system design, deletion may be rejected or sub-accounts may be cascade-deleted
 
-#### 步骤
+#### Steps
 
-1. 调用删除账户接口
-2. 传入账户组ID
+1. Call the delete-account API
+2. Pass in the account group ID
 
-### TC-EDGE-ACCT-003 — 多层嵌套账户组
+### TC-EDGE-ACCT-003 — Multi-Level Nested Account Groups
 
-- 模块：边界条件与异常场景 / 账户边界测试
-- 优先级：P2
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录
-- 测试数据：创建超过10层的账户组嵌套
-- 预期结果：根据系统设计可能成功或限制嵌套层级
+- Module: Boundary Conditions & Exception Scenarios / Account boundary tests
+- Priority: P2
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in
+- Test data: create account-group nesting deeper than 10 levels
+- Expected result: depending on system design, it may succeed or the nesting depth may be limited
 
-#### 步骤
+#### Steps
 
-1. 创建多层嵌套的账户组结构
+1. Create a multi-level nested account group structure
 
-## Dashboard、配置与用户
+## Dashboard, Settings & User
 
-### TC-DASH-MONTHLY-002 — 获取指定月份的统计
+### TC-DASH-MONTHLY-002 — Get Statistics for a Specified Month
 
-- 模块：仪表盘模块 / 月度统计
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 延期原因：Beta 仅提供当前月份概览，协议不接受年份或月份参数。
-- 前置条件：用户已登录存在交易数据
-- 测试数据：年份: 2026 月份: 1
-- 预期结果：返回2026年1月的收支统计
+- Module: Dashboard module / Monthly statistics
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Deferral reason: the Beta only provides the current-month overview, and the protocol does not accept year or month parameters.
+- Preconditions: user is logged in and transaction data exists
+- Test data: year: 2026, month: 1
+- Expected result: returns income/expense statistics for January 2026
 
-#### 步骤
+#### Steps
 
-1. 调用获取月度统计接口
-2. 指定年份和月份
+1. Call the monthly statistics API
+2. Specify the year and month
 
-### TC-DASH-TREND-002 — 获取指定日期范围的余额趋势
+### TC-DASH-TREND-002 — Get Balance Trend for a Specified Date Range
 
-- 模块：仪表盘模块 / 余额趋势
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 延期原因：Beta 固定展示近 30 天趋势，协议只接受账户筛选，不接受日期范围。
-- 前置条件：用户已登录存在历史交易数据
-- 测试数据：开始日期: 2026-01-01 结束日期: 2026-01-31
-- 预期结果：返回指定日期范围内的余额趋势数据
+- Module: Dashboard module / Balance trend
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Deferral reason: the Beta always shows the last 30 days of trends, and the protocol only accepts account filters, not date ranges.
+- Preconditions: user is logged in and historical transaction data exists
+- Test data: start date: 2026-01-01, end date: 2026-01-31
+- Expected result: returns balance trend data for the specified date range
 
-#### 步骤
+#### Steps
 
-1. 调用获取余额趋势接口
-2. 指定开始和结束日期
+1. Call the balance trend API
+2. Specify start and end dates
 
-### TC-CFG-CURR-002 — 添加支持的货币
+### TC-CFG-CURR-002 — Add a Supported Currency
 
-- 模块：配置管理模块 / 货币管理
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录有管理权限
-- 测试数据：货币代码: JPY
-- 预期结果：添加成功货币出现在列表中
+- Module: Configuration module / Currency management
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in with admin permission
+- Test data: currency code: JPY
+- Expected result: adding succeeds and the currency appears in the list
 
-#### 步骤
+#### Steps
 
-1. 调用添加货币接口
-2. 指定货币代码
+1. Call the add-currency API
+2. Specify the currency code
 
-### TC-CFG-CURR-003 — 添加已存在的货币
+### TC-CFG-CURR-003 — Add an Existing Currency
 
-- 模块：配置管理模块 / 货币管理
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录货币已存在
-- 测试数据：货币代码: CNY
-- 预期结果：添加失败提示货币已存在
+- Module: Configuration module / Currency management
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the currency already exists
+- Test data: currency code: CNY
+- Expected result: adding fails with a "currency already exists" message
 
-#### 步骤
+#### Steps
 
-1. 调用添加货币接口
-2. 指定已存在的货币代码
+1. Call the add-currency API
+2. Specify an existing currency code
 
-### TC-CFG-CURR-004 — 删除支持的货币
+### TC-CFG-CURR-004 — Delete a Supported Currency
 
-- 模块：配置管理模块 / 货币管理
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录货币存在且无关联账户
-- 测试数据：货币代码: JPY
-- 预期结果：删除成功货币从列表中移除
+- Module: Configuration module / Currency management
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in, the currency exists and no accounts are linked to it
+- Test data: currency code: JPY
+- Expected result: deletion succeeds and the currency is removed from the list
 
-#### 步骤
+#### Steps
 
-1. 调用删除货币接口
-2. 指定货币代码
+1. Call the delete-currency API
+2. Specify the currency code
 
-### TC-CFG-CURR-005 — 删除有账户关联的货币
+### TC-CFG-CURR-005 — Delete a Currency in Use by Accounts
 
-- 模块：配置管理模块 / 货币管理
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录货币存在且有账户使用
-- 测试数据：货币代码: CNY
-- 预期结果：删除失败提示货币正在使用中
+- Module: Configuration module / Currency management
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in, the currency exists and accounts use it
+- Test data: currency code: CNY
+- Expected result: deletion fails with a "currency is in use" message
 
-#### 步骤
+#### Steps
 
-1. 调用删除货币接口
-2. 指定有账户使用的货币代码
+1. Call the delete-currency API
+2. Specify a currency code that is used by accounts
 
-### TC-CFG-THEME-001 — 获取可用主题列表
+### TC-CFG-THEME-001 — Get Available Theme List
 
-- 模块：配置管理模块 / 主题管理
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录
-- 测试数据：无
-- 预期结果：返回系统支持的所有主题列表
+- Module: Configuration module / Theme management
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in
+- Test data: none
+- Expected result: returns the list of all themes supported by the system
 
-#### 步骤
+#### Steps
 
-1. 调用获取主题列表接口
+1. Call the get-theme-list API
 
-### TC-USER-PROFILE-002 — 更新用户资料
+### TC-USER-PROFILE-002 — Update User Profile
 
-- 模块：用户管理模块 / 用户资料
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录
-- 测试数据：新昵称: 测试用户
-- 预期结果：更新成功资料已变更
+- Module: User management module / User profile
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in
+- Test data: new nickname: Test User
+- Expected result: the update succeeds and the profile has changed
 
-#### 步骤
+#### Steps
 
-1. 调用更新用户资料接口
-2. 修改昵称等信息
+1. Call the update-user-profile API
+2. Change the nickname, etc.
 
-### TC-USER-THEME-001 — 更新用户主题偏好
+### TC-USER-THEME-001 — Update User Theme Preference
 
-- 模块：用户管理模块 / 主题偏好
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录
-- 测试数据：主题ID: dark
-- 预期结果：1. 更新成功
-2. 界面主题切换为深色模式
+- Module: User management module / Theme preference
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in
+- Test data: theme ID: dark
+- Expected result: 1. The update succeeds
+  2. The UI switches to dark mode
 
-#### 步骤
+#### Steps
 
-1. 调用更新主题接口
-2. 指定主题ID
+1. Call the update-theme API
+2. Specify a theme ID
 
-### TC-USER-THEME-002 — 更新为不存在的主题
+### TC-USER-THEME-002 — Update to a Nonexistent Theme
 
-- 模块：用户管理模块 / 主题偏好
-- 优先级：P2
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录
-- 测试数据：主题ID: nonexistent_theme
-- 预期结果：更新失败提示主题不存在
+- Module: User management module / Theme preference
+- Priority: P2
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in
+- Test data: theme ID: nonexistent_theme
+- Expected result: the update fails with a "theme does not exist" message
 
-#### 步骤
+#### Steps
 
-1. 调用更新主题接口
-2. 指定不存在的主题ID
+1. Call the update-theme API
+2. Specify a nonexistent theme ID
 
-## 数据、任务与健康检查
+## Data, Tasks & Health Checks
 
-### TC-DATA-EXPORT-001 — 创建数据导出任务
+### TC-DATA-EXPORT-001 — Create a Data Export Task
 
-- 模块：数据导入导出模块 / 数据导出
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录存在数据
-- 测试数据：无
-- 预期结果：1. 返回任务ID
-2. 任务状态为进行中或待处理
+- Module: Data import/export module / Data export
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and data exists
+- Test data: none
+- Expected result: 1. Returns the task ID
+  2. The task status is in progress or pending
 
-#### 步骤
+#### Steps
 
-1. 调用创建导出任务接口
+1. Call the create-export-task API
 
-### TC-DATA-EXPORT-002 — 创建指定日期范围的导出任务
+### TC-DATA-EXPORT-002 — Create an Export Task for a Specified Date Range
 
-- 模块：数据导入导出模块 / 数据导出
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录存在数据
-- 测试数据：开始日期: 2026-01-01 结束日期: 2026-01-31
-- 预期结果：返回任务ID导出数据仅包含指定范围
+- Module: Data import/export module / Data export
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and data exists
+- Test data: start date: 2026-01-01, end date: 2026-01-31
+- Expected result: returns the task ID, and the exported data contains only the specified range
 
-#### 步骤
+#### Steps
 
-1. 调用创建导出任务接口
-2. 指定日期范围
+1. Call the create-export-task API
+2. Specify a date range
 
-### TC-DATA-EXPORT-003 — 获取导出任务状态
+### TC-DATA-EXPORT-003 — Get Export Task Status
 
-- 模块：数据导入导出模块 / 数据导出
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录存在导出任务
-- 测试数据：有效任务ID
-- 预期结果：返回任务状态：进行中已完成或失败
+- Module: Data import/export module / Data export
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and an export task exists
+- Test data: a valid task ID
+- Expected result: returns the task status — in progress, completed or failed
 
-#### 步骤
+#### Steps
 
-1. 调用获取导出状态接口
-2. 传入任务ID
+1. Call the get-export-status API
+2. Pass in the task ID
 
-### TC-DATA-EXPORT-004 — 下载导出文件
+### TC-DATA-EXPORT-004 — Download an Exported File
 
-- 模块：数据导入导出模块 / 数据导出
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录导出任务已完成
-- 测试数据：已完成任务的ID
-- 预期结果：1. 返回导出文件内容
-2. 文件格式正确（如JSON或CSV）
+- Module: Data import/export module / Data export
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the export task has completed
+- Test data: the ID of a completed task
+- Expected result: 1. Returns the exported file content
+  2. The file format is correct (e.g., JSON or CSV)
 
-#### 步骤
+#### Steps
 
-1. 调用下载导出文件接口
-2. 传入任务ID
+1. Call the download-export-file API
+2. Pass in the task ID
 
-### TC-DATA-EXPORT-005 — 下载未完成的导出文件
+### TC-DATA-EXPORT-005 — Download an Incomplete Export File
 
-- 模块：数据导入导出模块 / 数据导出
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录导出任务进行中
-- 测试数据：进行中任务的ID
-- 预期结果：下载失败提示任务尚未完成
+- Module: Data import/export module / Data export
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the export task is in progress
+- Test data: the ID of an in-progress task
+- Expected result: download fails with a "task not yet completed" message
 
-#### 步骤
+#### Steps
 
-1. 调用下载导出文件接口
-2. 传入进行中任务的ID
+1. Call the download-export-file API
+2. Pass in the ID of an in-progress task
 
-### TC-DATA-IMPORT-001 — 创建数据导入任务
+### TC-DATA-IMPORT-001 — Create a Data Import Task
 
-- 模块：数据导入导出模块 / 数据导入
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录有有效的导入文件
-- 测试数据：有效的JSON格式导出文件
-- 预期结果：1. 返回任务ID
-2. 任务开始处理
+- Module: Data import/export module / Data import
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and has a valid import file
+- Test data: a valid JSON-format export file
+- Expected result: 1. Returns the task ID
+  2. The task starts processing
 
-#### 步骤
+#### Steps
 
-1. 调用创建导入任务接口
-2. 上传导入文件
+1. Call the create-import-task API
+2. Upload the import file
 
-### TC-DATA-IMPORT-002 — 导入无效格式的文件
+### TC-DATA-IMPORT-002 — Import a File With an Invalid Format
 
-- 模块：数据导入导出模块 / 数据导入
-- 优先级：P0
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录
-- 测试数据：无效格式的文件
-- 预期结果：导入失败提示文件格式无效
+- Module: Data import/export module / Data import
+- Priority: P0
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in
+- Test data: a file with an invalid format
+- Expected result: the import fails with an "invalid file format" message
 
-#### 步骤
+#### Steps
 
-1. 调用创建导入任务接口
-2. 上传无效格式的文件
+1. Call the create-import-task API
+2. Upload a file with an invalid format
 
-### TC-DATA-IMPORT-003 — 导入空文件
+### TC-DATA-IMPORT-003 — Import an Empty File
 
-- 模块：数据导入导出模块 / 数据导入
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录
-- 测试数据：空文件
-- 预期结果：导入失败提示文件为空或无效
+- Module: Data import/export module / Data import
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in
+- Test data: an empty file
+- Expected result: the import fails with a "file is empty or invalid" message
 
-#### 步骤
+#### Steps
 
-1. 调用创建导入任务接口
-2. 上传空文件
+1. Call the create-import-task API
+2. Upload an empty file
 
-### TC-DATA-IMPORT-004 — 导入大文件
+### TC-DATA-IMPORT-004 — Import a Large File
 
-- 模块：数据导入导出模块 / 数据导入
-- 优先级：P2
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录
-- 测试数据：超过10MB的导入文件
-- 预期结果：根据系统限制可能成功或提示文件过大
+- Module: Data import/export module / Data import
+- Priority: P2
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in
+- Test data: an import file over 10MB
+- Expected result: depending on system limits, it may succeed or show a "file too large" message
 
-#### 步骤
+#### Steps
 
-1. 调用创建导入任务接口
-2. 上传大文件
+1. Call the create-import-task API
+2. Upload a large file
 
-### TC-TASK-LIST-001 — 获取任务列表
+### TC-TASK-LIST-001 — Get Task List
 
-- 模块：任务管理模块 / 任务列表
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录存在任务
-- 测试数据：无
-- 预期结果：1. 返回所有任务列表
-2. 包含任务ID类型状态等
+- Module: Task management module / Task list
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and tasks exist
+- Test data: none
+- Expected result: 1. Returns the full task list
+  2. Includes task ID, type, status, etc.
 
-#### 步骤
+#### Steps
 
-1. 调用任务列表接口
+1. Call the task list API
 
-### TC-TASK-GET-001 — 获取任务详情
+### TC-TASK-GET-001 — Get Task Details
 
-- 模块：任务管理模块 / 任务详情
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录任务存在
-- 测试数据：有效任务ID
-- 预期结果：返回任务完整信息包括进度错误信息等
+- Module: Task management module / Task details
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the task exists
+- Test data: a valid task ID
+- Expected result: returns complete task information including progress and error details
 
-#### 步骤
+#### Steps
 
-1. 调用获取任务详情接口
-2. 传入任务ID
+1. Call the get-task-details API
+2. Pass in the task ID
 
-### TC-TASK-CANCEL-001 — 取消进行中的任务
+### TC-TASK-CANCEL-001 — Cancel an In-Progress Task
 
-- 模块：任务管理模块 / 任务操作
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录任务正在进行中
-- 测试数据：进行中任务的ID
-- 预期结果：1. 任务取消成功
-2. 任务状态变为已取消
+- Module: Task management module / Task operations
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the task is in progress
+- Test data: the ID of an in-progress task
+- Expected result: 1. The task is cancelled successfully
+  2. The task status becomes cancelled
 
-#### 步骤
+#### Steps
 
-1. 调用取消任务接口
-2. 传入任务ID
+1. Call the cancel-task API
+2. Pass in the task ID
 
-### TC-TASK-CANCEL-002 — 取消已完成的任务
+### TC-TASK-CANCEL-002 — Cancel a Completed Task
 
-- 模块：任务管理模块 / 任务操作
-- 优先级：P2
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录任务已完成
-- 测试数据：已完成任务的ID
-- 预期结果：取消失败提示任务已完成无法取消
+- Module: Task management module / Task operations
+- Priority: P2
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the task has completed
+- Test data: the ID of a completed task
+- Expected result: cancellation fails with a "task already completed, cannot be cancelled" message
 
-#### 步骤
+#### Steps
 
-1. 调用取消任务接口
-2. 传入已完成任务的ID
+1. Call the cancel-task API
+2. Pass in the ID of a completed task
 
-### TC-TASK-RETRY-001 — 重试失败的任务
+### TC-TASK-RETRY-001 — Retry a Failed Task
 
-- 模块：任务管理模块 / 任务操作
-- 优先级：P1
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录任务失败
-- 测试数据：失败任务的ID
-- 预期结果：1. 任务重新开始执行
-2. 任务状态变为进行中
+- Module: Task management module / Task operations
+- Priority: P1
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the task failed
+- Test data: the ID of a failed task
+- Expected result: 1. The task starts running again
+  2. The task status becomes in progress
 
-#### 步骤
+#### Steps
 
-1. 调用重试任务接口
-2. 传入失败任务的ID
+1. Call the retry-task API
+2. Pass in the ID of the failed task
 
-### TC-TASK-RETRY-002 — 重试成功的任务
+### TC-TASK-RETRY-002 — Retry a Successful Task
 
-- 模块：任务管理模块 / 任务操作
-- 优先级：P2
-- 执行状态：**NOT RUN**
-- Beta 处置：**DEFERRED**
-- 前置条件：用户已登录任务已成功
-- 测试数据：成功任务的ID
-- 预期结果：重试失败提示任务已成功无需重试
+- Module: Task management module / Task operations
+- Priority: P2
+- Execution status: **NOT RUN**
+- Beta disposition: **DEFERRED**
+- Preconditions: user is logged in and the task succeeded
+- Test data: the ID of a successful task
+- Expected result: retry fails with a "task already succeeded, no need to retry" message
 
-#### 步骤
+#### Steps
 
-1. 调用重试任务接口
-2. 传入成功任务的ID
+1. Call the retry-task API
+2. Pass in the ID of the successful task

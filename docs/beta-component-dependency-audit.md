@@ -1,41 +1,34 @@
-# Beta 组件依赖审计
+# Beta Component Dependency Audit
 
-审计日期：2026-08-12。判断标准是核心请求链路、启动链路和前端实际入口，不能仅根据
-功能名称判断某个组件是否可从生产栈删除。
+Audit date: 2026-08-12. The judgment criteria are the actual core request chain, startup chain and frontend entry points; whether a component can be removed from the production stack must not be decided based on its feature name alone.
 
-## 结论
+## Conclusions
 
-| 计划中的组件或功能 | 实际依赖 | Beta 决策 | 代码处置 |
+| Planned Component or Feature | Actual Dependency | Beta Decision | Code Disposition |
 |---|---|---|---|
-| RabbitMQ | Dashboard 快照刷新、持久化重建 | **保留，核心依赖** | UAT/生产 Compose 加入 RabbitMQ；API 启动与 ready fail closed；启动 Dashboard worker |
-| WebSocket | 仅任务状态推送 | 不开放 | 生产不绑定 `/v1/ws`，前端任务通知 hook 未挂载；无需兼容层 |
-| 任务中心 | RabbitMQ `gaap.tasks` 队列和任务 API | UI/API 延期，但保留现有 worker | Beta 中间件拒绝任务 API；RabbitMQ 已是核心依赖，保留空闲 worker比增加运行模式分支更简单 |
-| 导入导出 | 任务队列、文件目录、下载接口 | 不开放 | UI 隐藏且 Beta 中间件拒绝数据 API；不挂载导出文件卷 |
-| 账户迁移删除 | 任务队列、迁移逻辑、任务中心 | 不开放 | 后端拒绝删除有业务交易的账户；前端移除迁移选择界面并明确提示 |
-| Pro 账户组与子账户 | Pro 用户等级、父子账户 UI 与校验 | 不开放 | 成功路径 UAT 全部延期；正常 UI 路径不可达，但服务端仍须拒绝 Free 用户直接提交 `is_group`/`parent_id`，不得以 UI 隐藏代替权限校验 |
-| 2FA | 登录时的 TOTP 分支 | 不开放设置入口 | 全新生产库用户均为未启用；设置和变更 API 被隐藏/拒绝，登录兼容代码保留但不引入外部组件 |
-| 密码修改 | 认证 API | 不开放 | UI 无入口，Beta 中间件拒绝接口；登录、刷新、退出不依赖它 |
-| 汇率与多币种换算 | 浏览器外部汇率 API、前端汇率状态 | 不开放 | 设置入口不可达；核心金额与 Dashboard 不读取汇率，仅允许用户基准币种 |
-| 启动余额重算 | PostgreSQL、Redis 锁、完整会计规则 | **不作为启动修复器运行** | 当前实现枚举和规则不完整，已从启动链路移除；账户余额由交易事务持久化，启动只重建派生 Dashboard |
-| PostgreSQL Dashboard 快照 | Dashboard 冷启动缓存 | 保留但不作为真值 | 交易/账户变更同时清除 Redis 与数据库旧快照；启动从交易和账户数据重建，禁止复活旧快照 |
+| RabbitMQ | Dashboard snapshot refresh, persistent rebuild | **Keep, core dependency** | Added RabbitMQ to UAT/production Compose; API startup and ready fail closed; start the Dashboard worker |
+| WebSocket | Task status push only | Not offered | Production does not bind `/v1/ws`; the frontend task notification hook is unmounted; no compatibility layer needed |
+| Task Center | RabbitMQ `gaap.tasks` queue and task APIs | UI/API deferred, but keep existing workers | Beta middleware rejects the task APIs; since RabbitMQ is already a core dependency, keeping an idle worker is simpler than adding runtime-mode branches |
+| Import/Export | Task queues, file directories, download endpoints | Not offered | UI hidden and Beta middleware rejects the data APIs; no export file volume mounted |
+| Account Migration & Delete | Task queue, migration logic, task center | Not offered | Backend refuses to delete accounts that have business transactions; frontend removes the migration picker and shows a clear notice |
+| Pro Account Groups & Sub-Accounts | Pro user tier, parent/child account UI and validation | Not offered | All success-path UAT deferred; the normal UI path is unreachable, but the server must still reject Free users submitting `is_group`/`parent_id` directly — hiding the UI cannot replace authorization checks |
+| 2FA | TOTP branch at login | Settings entry not offered | Users in the fresh production DB are all unenrolled; settings/change APIs hidden/rejected; login compatibility code kept without introducing external components |
+| Password Change | Auth API | Not offered | No UI entry point, Beta middleware rejects the endpoints; login, refresh and logout do not depend on it |
+| Exchange Rates & Multi-Currency Conversion | Browser-side external rate API, frontend rate state | Not offered | Settings entry unreachable; core amounts and Dashboard never read exchange rates, only the user's base currency is allowed |
+| Startup Balance Recalculation | PostgreSQL, Redis locks, full accounting rules | **Not run as a startup fixer** | The current implementation has incomplete enumeration and rules; removed from the startup chain; account balances are persisted by transaction transactions, and startup only rebuilds the derived Dashboard data |
+| PostgreSQL Dashboard Snapshots | Dashboard cold-start cache | Kept but not source of truth | Transaction/account changes clear both Redis and stale database snapshots at the same time; startup rebuilds from transaction and account data; reviving old snapshots is forbidden |
 
-## 上线架构修订
+## Production Architecture Revision
 
-首版生产栈应为 Caddy、Web、API、PostgreSQL、Redis、RabbitMQ。RabbitMQ 不对宿主机
-开放端口，只位于 Docker 内部数据网络。任务、导入导出和 WebSocket 仍然是延期功能，
-但“延期这些功能”不再等价于“删除 RabbitMQ”。
+The first production stack should be Caddy, Web, API, PostgreSQL, Redis and RabbitMQ. RabbitMQ exposes no port to the host and sits only on the Docker internal data network. Tasks, import/export and WebSocket remain deferred features, but "deferring these features" is no longer equivalent to "removing RabbitMQ".
 
-API 必须在 PostgreSQL、Redis、RabbitMQ 和迁移全部可用后才返回 ready。RabbitMQ
-启动连接失败时 API 不启动；运行中连接关闭时 ready 返回 503。
+The API must not return ready until PostgreSQL, Redis, RabbitMQ and migrations are all available. If the RabbitMQ startup connection fails, the API does not start; if a running connection closes, ready returns 503.
 
-## 仍需门禁
+## Still Gated
 
-- 实现只读账务对账器，覆盖资产、负债、收入、支出、权益、期初余额和转账；发现不一致
-  时报告并阻止发布，不能自动改写生产余额。
-- 修复账户创建的服务端等级校验，并通过 `TC-EDGE-SEC-003` 验证 Free 用户无法绕过 UI
-  创建账户组或子账户；这是 Beta 权限边界，不随 Pro 成功路径一起延期。
-- 验证 RabbitMQ 重启后的 API 恢复策略。当前 ready 会转为 503，但 AMQP 客户端没有完整
-  的自动重连和重新注册消费者机制；本周可用 API 容器联动重启作为运行手册方案。
-- 人工 UAT 验证历史日期交易创建、更新、删除后，Dashboard 在一次页面刷新内反映正确日期
-  和余额变化。
-- 生产部署前将基础设施镜像解析为已验证的精确版本或 digest，避免浮动标签漂移。
+- Implement a read-only ledger reconciler covering assets, liabilities, income, expenses, equity, opening balances and transfers; when inconsistencies are found it must report them and block release — production balances may not be rewritten automatically.
+- Fix the server-side tier validation on account creation and verify with `TC-EDGE-SEC-003` that Free users cannot bypass the UI to create account groups or sub-accounts; this is a Beta permission boundary and is not deferred along with the Pro success paths.
+- Verify the API recovery policy after RabbitMQ restarts. Ready currently flips to 503, but the AMQP client lacks complete automatic reconnection and consumer re-registration; as a runbook solution for this week, restarting the API container in tandem is acceptable.
+- Manually verify via UAT that after creating, updating or deleting transactions with historical dates, the Dashboard reflects correct dates
+  and balance changes within a single page refresh.
+- Before production deployment, resolve infrastructure images to verified exact versions or digests to avoid floating-tag drift.

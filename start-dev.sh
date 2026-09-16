@@ -100,9 +100,23 @@ start_local_api() {
 
     print_info "Installing Go dependencies..."
     go mod download
+
+    # Sanity check: dev middleware (RabbitMQ/Postgres/Redis) must be reachable,
+    # otherwise the API spams reconnect warnings into its log (DEF-032).
+    local mq_port
+    mq_port=$(grep -E '^RABBITMQ_PORT=' .env 2>/dev/null | head -1 | cut -d= -f2)
+    [ -z "$mq_port" ] && mq_port="5672"
+    if ! nc -z 127.0.0.1 "$mq_port" >/dev/null 2>&1; then
+        print_warning "RabbitMQ not reachable at 127.0.0.1:${mq_port} — the dev API will spam reconnect warnings."
+        print_info "Start it first: ./start-dev.sh start middleware (or: docker compose -f docker-middleware-compose.yml up -d rabbitmq)"
+    fi
+
+    # Note: .air.toml is written for Windows (cmd /c hack\build_dev.bat); on
+    # macOS/Linux pass a POSIX build command explicitly. The dev API log uses a
+    # distinct filename so it cannot be confused with UAT container logs (DEF-032).
     print_info "Starting API server with hot-reload in screen session 'gaap-api'..."
     mkdir -p "$SCRIPT_DIR/logs"
-    screen -dmS gaap-api bash -c "cd '$SCRIPT_DIR/gaap-api' && air 2>&1 | tee '$SCRIPT_DIR/logs/api.log'; exec bash"
+    screen -dmS gaap-api bash -c "cd '$SCRIPT_DIR/gaap-api' && air -build.cmd 'sh hack/build_dev.sh' -build.bin tmp/main -build.full_bin tmp/main 2>&1 | tee '$SCRIPT_DIR/logs/gaap-api-dev.log'; exec bash"
     cd "$SCRIPT_DIR"
     print_success "GAAP API started on http://localhost:8000"
     print_info "Attach: screen -r gaap-api   Stop: ./start-dev.sh stop api"
@@ -297,13 +311,13 @@ show_logs() {
     for target in $targets; do
         case $target in
             api)
-                local_logs="$local_logs $SCRIPT_DIR/logs/api.log"
+                local_logs="$local_logs $SCRIPT_DIR/logs/gaap-api-dev.log"
                 ;;
             web)
                 local_logs="$local_logs $SCRIPT_DIR/logs/web.log"
                 ;;
             all)
-                local_logs="$local_logs $SCRIPT_DIR/logs/api.log $SCRIPT_DIR/logs/web.log"
+                local_logs="$local_logs $SCRIPT_DIR/logs/gaap-api-dev.log $SCRIPT_DIR/logs/web.log"
                 all_services="$all_services $MIDDLEWARE_SERVICES"
                 ;;
             *)

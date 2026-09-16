@@ -47,7 +47,7 @@ jobs:
           target: production
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/gin-melodic/gaap-api:beta-2026-08-14-${{ inputs.api_sha }}
+          tags: ghcr.io/gin-melodic/gaap-api:beta-2026-09-16-${{ inputs.api_sha }}
 
       - name: Build and publish Web
         uses: docker/build-push-action@v6
@@ -56,7 +56,7 @@ jobs:
           target: production
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/gin-melodic/gaap-web:beta-2026-08-14-${{ inputs.web_sha }}
+          tags: ghcr.io/gin-melodic/gaap-web:beta-2026-09-16-${{ inputs.web_sha }}
           build-args: |
             NEXT_PUBLIC_ALE_BOOTSTRAP_KEY=${{ secrets.BETA_ALE_BOOTSTRAP_KEY }}
             NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.BETA_TURNSTILE_SITE_KEY }}

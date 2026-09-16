@@ -28,6 +28,7 @@ services:
     env_file:
       - .env.uat
     environment:
+      TZ: Asia/Shanghai
       GF_ENV: production
       GF_GCFG_FILE: config.prod.yaml
       POSTGRES_HOST: postgres
@@ -58,6 +59,11 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # Persistent per-day access/app logs (DEF-032b). The api_logs volume is
+    # seeded from the image's gaap-owned /app/logs so it stays writable under
+    # read_only + non-root.
+    volumes:
+      - api_logs:/app/logs
     networks:
       - edge
       - data
@@ -72,6 +78,7 @@ services:
         NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:?set NEXT_PUBLIC_TURNSTILE_SITE_KEY}
     restart: unless-stopped
     environment:
+      TZ: Asia/Shanghai
       NODE_ENV: production
       HOSTNAME: 0.0.0.0
       PORT: "3000"
@@ -154,3 +161,4 @@ volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
+  api_logs:
