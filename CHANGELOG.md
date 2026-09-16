@@ -4,7 +4,7 @@ All notable GAAP Cloud releases are recorded here. **English only** — the
 localized in-app copy lives in `gaap-web/src/locales/{en,zh-CN,zh-TW,ja}/changelog.json`.
 Version baseline rules: see [`VERSIONING.md`](VERSIONING.md).
 
-## [v0.0.2-beta] — Upcoming (multi-currency extension)
+## [v0.0.2-beta] — 2026-09-16
 
 ### Added
 

@@ -39,9 +39,10 @@ release notes. Rules:
 | Baseline    | Status                    | Description                                              |
 |-------------|---------------------------|----------------------------------------------------------|
 | `v0.0.1-beta` | **Released** 2026-08-14  | Invite-only Beta — core ledger (live on `gaap.cc`)       |
-| `v0.0.2-beta` | **In flight** (unreleased) | Multi-currency extension: per-currency accounts, exchange-rate management, base-currency valuation |
+| `v0.0.2-beta` | **Released** 2026-09-16  | Multi-currency extension: per-currency accounts, exchange-rate management, base-currency valuation |
+| `v0.0.3-beta` | **In flight** (unreleased) | Reserved for the next baseline after `v0.0.2-beta`     |
 
-Next available baseline after `v0.0.2-beta` ships: **`v0.0.3-beta`**.
+Next available baseline after `v0.0.3-beta` ships: **`v0.0.4-beta`**.
 
 ## 4. Single source of truth for the version
 
