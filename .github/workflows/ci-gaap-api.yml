@@ -2,12 +2,12 @@ name: GAAP API CI
 
 on:
   push:
-    branches: [ "main", "master", "develop" ]
+    branches: [ "main", "master" ]
     paths:
       - 'gaap-api/**'
       - '.github/workflows/ci-gaap-api.yml'
   pull_request:
-    branches: [ "main", "master", "develop" ]
+    branches: [ "main", "master" ]
     paths:
       - 'gaap-api/**'
       - '.github/workflows/ci-gaap-api.yml'

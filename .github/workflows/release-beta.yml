@@ -2,9 +2,9 @@ name: Beta Release Gate
 
 on:
   push:
-    branches: [main, develop, 'codex/**']
+    branches: [main, 'codex/**']
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   verify:
